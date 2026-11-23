@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ruang Latihan</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#5b4be8">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ruang Latihan">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f4f8;--panel:#fff;--panel2:#eff1f7;--ink:#161a23;--mute:#667085;--brass:#5b4be8;--ok:#0e9f77;--line:#e3e6ee;--on:#fff;--grad:linear-gradient(135deg,#5b4be8,#8b4fe6);--shadow:0 1px 2px rgba(16,24,40,.06),0 10px 28px rgba(16,24,40,.07);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1017;--panel:#161a23;--panel2:#1e2430;--ink:#eceff5;--mute:#8a93a6;--brass:#9a8fff;--ok:#38d6a7;--line:#272d3a;--on:#0d1017;--grad:linear-gradient(135deg,#9a8fff,#c19bff);--shadow:0 10px 30px rgba(0,0,0,.4);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d1017;--panel:#161a23;--panel2:#1e2430;--ink:#eceff5;--mute:#8a93a6;--brass:#9a8fff;--ok:#38d6a7;--line:#272d3a;--on:#0d1017;--grad:linear-gradient(135deg,#9a8fff,#c19bff);--shadow:0 10px 30px rgba(0,0,0,.4);color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',sans-serif}
+main{max-width:520px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.6rem;margin:0 0 14px;letter-spacing:-.02em}
+nav{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:18px}
+nav button{flex:1;padding:9px 4px;border:0;border-radius:9px;background:none;color:var(--mute);font:inherit;font-size:.92rem;cursor:pointer}
+nav button[aria-selected="true"]{background:var(--brass);color:var(--on);font-weight:700}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
+section{display:none;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px}
+section.on{display:block}
+.big{font-size:4.6rem;font-weight:700;line-height:1;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.sub{text-align:center;color:var(--mute);margin:4px 0 14px}
+.row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin:12px 0}
+.btn{padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;cursor:pointer}
+.btn.main{background:var(--brass);border-color:var(--brass);color:var(--on);font-weight:700;min-width:130px}
+.btn.sm{padding:6px 12px;font-size:.9rem}
+input[type=range]{width:100%;accent-color:var(--brass)}
+input,select{font:inherit;padding:9px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}
+label{color:var(--mute);font-size:.9rem}
+/* pendulum */
+.stage{height:150px;position:relative;margin:0 auto 6px;width:200px}
+#arm{position:absolute;left:50%;bottom:6px;width:6px;height:130px;margin-left:-3px;background:var(--ink);border-radius:3px;transform-origin:50% 100%;transform:rotate(-24deg);transition:transform .5s ease-in-out}
+#arm::before{content:"";position:absolute;top:22px;left:-11px;width:28px;height:20px;background:var(--brass);border-radius:5px}
+.base{position:absolute;left:50%;bottom:0;width:110px;height:12px;margin-left:-55px;background:var(--line);border-radius:6px}
+.dots{display:flex;gap:8px;justify-content:center;margin:8px 0 14px}
+.dots i{width:16px;height:16px;border-radius:50%;background:var(--line)}
+.dots i.hit{background:var(--brass)}
+.dots i.acc.hit{background:var(--ok)}
+/* tuner */
+.meter{position:relative;height:44px;margin:16px 0}
+.meter::before{content:"";position:absolute;left:0;right:0;top:20px;height:4px;background:var(--line);border-radius:2px}
+.meter::after{content:"";position:absolute;left:50%;top:6px;height:32px;width:2px;background:var(--mute)}
+#needle{position:absolute;top:2px;left:50%;width:10px;height:40px;margin-left:-5px;border-radius:5px;background:var(--brass);transition:left .12s,background .12s}
+#needle.ok{background:var(--ok)}
+.strings button.btn{min-width:48px}
+/* timer */
+.chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.chips .btn[aria-pressed="true"]{border-color:var(--brass);color:var(--brass);font-weight:700}
+/* library */
+.song{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.song .t{flex:1;min-width:0}
+.song b{display:block;overflow-wrap:anywhere}
+.song small{color:var(--mute)}
+.st{border-radius:99px;font-size:.8rem;padding:3px 10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;font-family:inherit}
+.st.siap{border-color:var(--ok);color:var(--ok)}
+.st.latihan{border-color:var(--brass);color:var(--brass)}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.form .w{grid-column:1/-1}
+.empty{color:var(--mute);text-align:center;padding:16px 0}
+.err{color:var(--brass);text-align:center;min-height:1.5em}
+nav{overflow-x:auto}
+nav button{white-space:nowrap;padding:9px 10px}
+textarea{font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;padding:9px 10px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%;min-height:90px}
+pre.chart{font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border-radius:10px;padding:12px;margin:0 0 8px;color:var(--ink)}
+.chartbox{padding:0 0 12px;border-bottom:1px solid var(--line)}
+.cdiag{display:block;margin:0 auto;color:var(--ink)}
+.song>span{color:var(--mute);min-width:1.4em}
+pre.chart .cl{color:var(--brass);font-weight:700}
+pre.chart .sec{display:inline-block;background:var(--brass);color:var(--on);font:700 .85em 'Bricolage Grotesque',system-ui,sans-serif;padding:1px 9px;border-radius:5px;margin:8px 0 3px}
+.btn[aria-pressed="true"]{border-color:var(--brass);color:var(--brass);font-weight:700}
+.btn:disabled{opacity:.4;cursor:default}
+#pv{position:fixed;inset:0;z-index:50;background:var(--bg);color:var(--ink);overflow-y:auto}
+#pvbar{position:sticky;top:0;z-index:2;background:var(--panel);border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 8px}
+#pvpre{background:none;max-width:900px;margin:0 auto;padding:16px 16px 60vh}
+/* tampilan modern */
+body{background-image:radial-gradient(900px 420px at 85% -10%,color-mix(in srgb,var(--brass) 15%,transparent),transparent);background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:4}
+main{max-width:600px}
+h1{font-size:1.9rem;letter-spacing:-.035em;margin:6px 0 16px}
+h1::before{content:"";display:inline-block;width:.5em;height:.5em;border-radius:50%;background:var(--grad);margin-right:.45em;vertical-align:.08em}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--panel) 85%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-radius:999px;padding:5px;box-shadow:var(--shadow);scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{border-radius:999px;padding:9px 15px;font-weight:500;transition:background .2s,color .2s}
+nav button[aria-selected="true"]{background:var(--grad);color:var(--on);font-weight:700;box-shadow:0 4px 14px color-mix(in srgb,var(--brass) 40%,transparent)}
+section{border-radius:26px;padding:24px;box-shadow:var(--shadow)}
+section.on{animation:rise .25s ease}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+.btn{border-radius:999px;background:var(--panel2);border:1px solid transparent;padding:10px 18px;font-weight:500;transition:transform .12s,background .2s}
+.btn:active{transform:scale(.96)}
+.btn.sm{padding:6px 13px}
+.song .btn,.chartbox .btn,.st{background:var(--panel)}
+.btn[aria-pressed="true"]{background:color-mix(in srgb,var(--brass) 16%,var(--panel));border-color:color-mix(in srgb,var(--brass) 55%,transparent)}
+.btn.main{background:var(--grad);color:var(--on);border-color:transparent;box-shadow:0 6px 18px color-mix(in srgb,var(--brass) 35%,transparent)}
+input,select,textarea{background:var(--panel2);border:1px solid transparent;border-radius:12px}
+input:focus,select:focus,textarea:focus{border-color:var(--brass)}
+input[type=range]{background:none;border:0;padding:0}
+.big{font-size:5rem;letter-spacing:-.045em}
+.dots i{width:14px;height:14px;background:var(--panel2)}
+.dots i.hit{box-shadow:0 0 12px var(--brass)}
+.dots i.acc.hit{box-shadow:0 0 12px var(--ok)}
+#arm::before{background:var(--grad);border-radius:8px}
+.base{background:var(--panel2)}
+.meter::before{background:var(--panel2)}
+#needle{background:var(--grad);border-radius:6px}
+#needle.ok{background:var(--ok)}
+.song{background:var(--panel2);border:0;border-radius:18px;padding:12px 14px;margin-bottom:8px}
+.chartbox{background:var(--panel2);border:0;border-radius:18px;padding:14px;margin:-2px 0 10px}
+.chartbox textarea,pre.chart{background:var(--panel)}
+.song{flex-wrap:wrap}
+.song .t{flex:1 1 130px}
+#pvpre{background:none}
+@media (prefers-reduced-motion:reduce){section.on{animation:none}}
+@media print{nav,h1,.chartctl,.song,.form,section:not(#perpustakaan){display:none!important}#perpustakaan{display:block!important;border:0}}
+@media (prefers-reduced-motion:reduce){#arm,#needle{transition:none}}
+</style>
+</head>
+<body>
+<main>
+<h1>Ruang Latihan</h1>
+<nav role="tablist">
+<button role="tab" data-t="metronom">Metronom</button>
+<button role="tab" data-t="tuner">Tuner</button>
+<button role="tab" data-t="timer">Timer</button>
+<button role="tab" data-t="perpustakaan">Lagu</button>
+<button role="tab" data-t="tambah">Tambah</button>
+<button role="tab" data-t="chord">Chord</button>
+<button role="tab" data-t="acara">Acara</button>
+</nav>
+
+<section id="metronom">
+<div class="stage"><div id="arm"></div><div class="base"></div></div>
+<div class="dots" id="dots"></div>
+<div class="big" id="bpmv">100</div>
+<div class="sub" id="tempoName">BPM · Allegretto</div>
+<input type="range" id="bpm" min="30" max="240" value="100" aria-label="Tempo BPM">
+<div class="row">
+<button class="btn" id="m10">−5</button><button class="btn" id="m1">−1</button>
+<button class="btn" id="p1">+1</button><button class="btn" id="p10">+5</button>
+</div>
+<div class="row">
+<label for="beats">Ketukan per birama</label>
+<select id="beats"><option>2</option><option>3</option><option selected>4</option><option>5</option><option>6</option><option>7</option></select>
+</div>
+<div class="row">
+<button class="btn main" id="go">Mulai</button>
+<button class="btn" id="tap">Tap tempo</button>
+</div>
+</section>
+
+<section id="tuner">
+<div class="big" id="note">–</div>
+<div class="sub" id="freq">Tekan Mulai lalu mainkan satu senar</div>
+<div class="meter"><div id="needle"></div></div>
+<div class="sub" id="cents">Menunggu nada</div>
+<div class="err" id="terr"></div>
+<div class="row"><button class="btn main" id="tgo">Mulai</button></div>
+<div class="row"><label for="a4">A4 =</label><input id="a4" type="number" min="410" max="470" value="440" style="width:80px"><label>Hz</label></div>
+<div class="sub">Nada acuan gitar (standar)</div>
+<div class="row strings" id="strings"></div>
+</section>
+
+<section id="timer">
+<div class="big" id="tv">15:00</div>
+<div class="sub" id="tsub">Siap berlatih</div>
+<div class="chips" id="chips"></div>
+<div class="row"><label for="cm">Menit lain</label><input id="cm" type="number" min="1" max="240" value="15" style="width:80px"></div>
+<div class="row"><button class="btn main" id="ts">Mulai</button><button class="btn" id="tr">Atur ulang</button></div>
+<div class="sub" id="today"></div>
+</section>
+
+<section id="perpustakaan">
+<div id="list"></div>
+</section>
+
+<section id="tambah">
+<form class="form" id="f" onsubmit="return false" style="margin-top:0">
+<input class="w" id="ft" placeholder="Judul lagu" aria-label="Judul lagu">
+<input id="fc" placeholder="Komposer" aria-label="Komposer">
+<input id="fk" placeholder="Nada dasar (mis. G)" aria-label="Nada dasar">
+<input id="fb" type="number" min="30" max="240" placeholder="Tempo BPM" aria-label="Tempo">
+<textarea class="w" id="fx" placeholder="Chord dan lirik (opsional). Taruh baris chord di atas lirik, mis. G  D  Em  C" aria-label="Chord dan lirik"></textarea>
+<button class="btn main" id="fa" type="button">Tambah lagu</button>
+</form>
+</section>
+
+<section id="chord">
+<div class="row"><label for="cr">Akor</label><select id="cr"></select><select id="ct" aria-label="Jenis akor"></select></div>
+<div class="big" id="cn">C</div>
+<div class="sub" id="cnotes"></div>
+<svg id="cd" class="cdiag" width="170" height="190" viewBox="0 0 170 190" role="img" aria-label="Diagram jari gitar"></svg>
+<div class="sub" id="cmsg"></div>
+<div class="row"><button class="btn main" id="cplay">Dengarkan</button></div>
+</section>
+
+<section id="acara">
+<div class="row"><select id="ev" aria-label="Pilih acara"></select><button class="btn sm" id="evn">Acara baru</button><button class="btn sm" id="evd">Hapus</button></div>
+<div class="row"><input id="evname" placeholder="Nama acara" aria-label="Nama acara"><input id="evdate" type="date" aria-label="Tanggal acara"></div>
+<div id="evlist"></div>
+<div class="row"><select id="evadd" aria-label="Pilih lagu"></select><button class="btn main" id="evaddb">Tambah ke draf</button></div>
+<div class="row"><button class="btn main" id="evpv">Presenter view</button></div>
+<div class="sub" id="evsum"></div>
+</section>
+</main>
+
+<div id="pv" hidden role="dialog" aria-label="Presenter view"><div id="pvbar"></div><pre class="chart" id="pvpre"></pre></div>
+<script>
+const $=id=>document.getElementById(id);
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let ctx;
+function audio(){if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();return ctx}
+function beep(t,f,len,vol){const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=f;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+len);o.connect(g).connect(ctx.destination);o.start(t);o.stop(t+len+.02)}
+
+/* Tab */
+const tabs=['metronom','tuner','timer','perpustakaan','tambah','chord','acara'];
+function show(n){if(!tabs.includes(n))n='metronom';tabs.forEach(t=>$(t).classList.toggle('on',t===n));document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===n));if(n!=='tuner')stopTuner();if(n==='acara')renderEv()}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.t});
+addEventListener('hashchange',()=>show(location.hash.slice(1)));
+
+/* Metronom */
+let bpm=100,beats=4,run=false,beat=0,next=0,iv=null,flip=false;
+const names=[[60,'Largo'],[76,'Adagio'],[108,'Andante'],[120,'Moderato'],[156,'Allegro'],[200,'Vivace'],[999,'Presto']];
+function drawDots(){$('dots').innerHTML=Array.from({length:beats},(_,i)=>'<i class="'+(i===0?'acc':'')+'"></i>').join('')}
+function setBpm(v){bpm=Math.max(30,Math.min(240,Math.round(v)));$('bpm').value=bpm;$('bpmv').textContent=bpm;$('tempoName').textContent='BPM · '+names.find(n=>bpm<n[0])[1]}
+function flash(b){const d=$('dots').children;for(const x of d)x.classList.remove('hit');if(d[b])d[b].classList.add('hit');flip=!flip;const a=$('arm');a.style.transitionDuration=(60/bpm)+'s';a.style.transform='rotate('+(flip?24:-24)+'deg)'}
+function sched(){while(next<ctx.currentTime+.12){beep(next,beat===0?1400:900,.05,.6);const b=beat;setTimeout(()=>flash(b),Math.max(0,(next-ctx.currentTime)*1000));next+=60/bpm;beat=(beat+1)%beats}}
+function mStart(){audio();run=true;beat=0;next=ctx.currentTime+.05;sched();iv=setInterval(sched,25);$('go').textContent='Berhenti'}
+function mStop(){run=false;clearInterval(iv);$('go').textContent='Mulai'}
+$('go').onclick=()=>run?mStop():mStart();
+$('bpm').oninput=e=>setBpm(+e.target.value);
+$('m10').onclick=()=>setBpm(bpm-5);$('m1').onclick=()=>setBpm(bpm-1);$('p1').onclick=()=>setBpm(bpm+1);$('p10').onclick=()=>setBpm(bpm+5);
+$('beats').onchange=e=>{beats=+e.target.value;beat=0;drawDots()};
+let taps=[];
+$('tap').onclick=()=>{const n=performance.now();if(taps.length&&n-taps[taps.length-1]>2000)taps=[];taps.push(n);taps=taps.slice(-6);if(taps.length>1){setBpm(60000/((taps[taps.length-1]-taps[0])/(taps.length-1)))}};
+drawDots();setBpm(100);
+
+/* Tuner */
+const NN=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+let stream,an,tiv,buf;
+function pitch(b,sr){let n=b.length,rms=0;for(let i=0;i<n;i++)rms+=b[i]*b[i];if(Math.sqrt(rms/n)<.012)return -1;
+let r1=0,r2=n-1,th=.2;for(let i=0;i<n/2;i++)if(Math.abs(b[i])<th){r1=i;break}for(let i=1;i<n/2;i++)if(Math.abs(b[n-i])<th){r2=n-i;break}
+b=b.slice(r1,r2);n=b.length;const c=new Float32Array(n);for(let i=0;i<n;i++)for(let j=0;j<n-i;j++)c[i]+=b[j]*b[j+i];
+let d=0;while(d<n-1&&c[d]>c[d+1])d++;let mx=-1,mp=-1;for(let i=d;i<n;i++)if(c[i]>mx){mx=c[i];mp=i}
+if(mp<1||mp>=n-1)return -1;let T=mp;const x1=c[T-1],x2=c[T],x3=c[T+1],a=(x1+x3-2*x2)/2,bb=(x3-x1)/2;if(a)T-=bb/(2*a);return sr/T}
+function tick(){an.getFloatTimeDomainData(buf);const f=pitch(buf,ctx.sampleRate);if(f<50||f>1200)return;
+const a4=+$('a4').value||440,m=69+12*Math.log2(f/a4),r=Math.round(m),c=Math.round((m-r)*100);
+$('note').textContent=NN[((r%12)+12)%12]+(Math.floor(r/12)-1);$('freq').textContent=f.toFixed(1)+' Hz';
+const nd=$('needle');nd.style.left=(50+c)+'%';nd.classList.toggle('ok',Math.abs(c)<=5);
+$('cents').textContent=Math.abs(c)<=5?'Pas':(c<0?'Terlalu rendah ('+c+' sen): kencangkan':'Terlalu tinggi (+'+c+' sen): kendurkan')}
+async function startTuner(){$('terr').textContent='';try{audio();stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+const s=ctx.createMediaStreamSource(stream);an=ctx.createAnalyser();an.fftSize=4096;buf=new Float32Array(an.fftSize);s.connect(an);tiv=setInterval(tick,100);$('tgo').textContent='Berhenti'}
+catch(e){$('terr').textContent='Mikrofon tidak bisa diakses. Izinkan akses mikrofon di browser, atau buka halaman ini di tab sendiri.'}}
+function stopTuner(){clearInterval(tiv);tiv=null;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('tgo').textContent='Mulai'}
+$('tgo').onclick=()=>stream?stopTuner():startTuner();
+[['E2',82.41],['A2',110],['D3',146.83],['G3',196],['B3',246.94],['E4',329.63]].forEach(([n,f])=>{const b=document.createElement('button');b.className='btn';b.textContent=n;b.onclick=()=>{audio();beep(ctx.currentTime,f,1.6,.4)};$('strings').appendChild(b)});
+
+/* Timer */
+let mins=15,left=900,tRun=false,end=0,tiv2=null;
+const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+const dayKey='done-'+new Date().toISOString().slice(0,10);
+function showToday(){const m=store.get(dayKey,0);$('today').textContent=m?'Latihan selesai hari ini: '+m+' menit':'Belum ada sesi selesai hari ini'}
+function setMins(m){mins=Math.max(1,Math.min(240,m|0));left=mins*60;$('cm').value=mins;$('tv').textContent=fmt(left);document.querySelectorAll('#chips .btn').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.m===mins))}
+[5,10,15,25,45].forEach(m=>{const b=document.createElement('button');b.className='btn sm';b.dataset.m=m;b.textContent=m+' menit';b.onclick=()=>{tReset();setMins(m)};$('chips').appendChild(b)});
+function tPause(){tRun=false;clearInterval(tiv2);$('ts').textContent='Lanjut';$('tsub').textContent='Dijeda'}
+function tReset(){tRun=false;clearInterval(tiv2);$('ts').textContent='Mulai';$('tsub').textContent='Siap berlatih';left=mins*60;$('tv').textContent=fmt(left)}
+function tStart(){audio();tRun=true;end=Date.now()+left*1000;$('ts').textContent='Jeda';$('tsub').textContent='Sedang berlatih';tiv2=setInterval(()=>{left=Math.max(0,Math.round((end-Date.now())/1000));$('tv').textContent=fmt(left);
+if(left<=0){clearInterval(tiv2);tRun=false;[0,.35,.7].forEach(d=>beep(ctx.currentTime+d,880,.25,.5));store.set(dayKey,store.get(dayKey,0)+mins);showToday();$('ts').textContent='Mulai';$('tsub').textContent='Selesai. Kerja bagus!';left=mins*60}},250)}
+$('ts').onclick=()=>tRun?tPause():tStart();$('tr').onclick=tReset;
+$('cm').onchange=e=>{tReset();setMins(+e.target.value)};
+setMins(15);showToday();
+
+/* Perpustakaan */
+const ST=['belajar','latihan','siap'];
+let openSong=0,trans=0,editSong=0,fs=15,showC=true,showL=true,flat=false,asOn=false,asSpeed=4,asAcc=0,asLast=0,asRun=0,pvId=0,pvList=[],pvFs=24,wl=null;
+const SH=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],FL={Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#'};
+const CK=/^[A-G][#b]?(maj|min|m|dim|aug|sus|add|M)?\d*(\/[A-G][#b]?)?$/;
+const KL=['C','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'],FLN=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'],FLATK=[1,3,5,8,10];
+const SEC=/^\s*(\[[^\]]+\]|(intro|verse|chorus|bridge|outro|refrain|reff?|bait|interlude|pre-?chorus|ending|coda|tag)\s*\d*\s*:?)\s*$/i;
+function tr1(n,d){n=FL[n]||n;const i=(SH.indexOf(n)+d+1200)%12;return flat?FLN[i]:SH[i]}
+function isCh(l){const t=l.trim().split(/\s+/).filter(w=>w&&!/^([|•·.:–-]+|x\d)$/.test(w));return t.length>0&&t.every(w=>CK.test(w))}
+function tline(l,d){return isCh(l)?l.replace(/[A-G][#b]?/g,m=>tr1(m,d)):l}
+function baseKey(s){const m=(s.k||'').match(/^([A-G][#b]?)/);if(m)return SH.indexOf(FL[m[1]]||m[1]);for(const l of (s.x||'').split('\n'))if(isCh(l)){const r=l.match(/[A-G][#b]?/);if(r)return SH.indexOf(FL[r[0]]||r[0])}return 0}
+function sheetHtml(s){let o='';(s.x||'').split('\n').forEach(raw=>{const l=tline(raw,trans),t=l.trim();if(!t){o+='\n';return}if(SEC.test(t)){o+='<span class="sec">'+esc(t)+'</span>\n';return}if(isCh(l)){if(showC)o+='<span class="cl">'+esc(l)+'</span>\n';return}if(showL)o+=esc(l)+'\n'});return o}
+function editBox(s){return '<div class="chartbox"><textarea id="ex" aria-label="Edit chord">'+esc(s.x||'')+'</textarea><div class="row" style="justify-content:flex-start;margin:6px 0 0"><button class="btn sm main" data-a="sv" data-id="'+s.id+'">Simpan</button><button class="btn sm" data-a="cx" data-id="'+s.id+'">Batal</button></div></div>'}
+function chartBox(s){if(editSong===s.id)return editBox(s);const bk=baseKey(s),cu=(bk+trans+1200)%12;flat=FLATK.includes(cu);const id=' data-id="'+s.id+'"';
+const keys=KL.map((n,i)=>'<button class="btn sm" data-a="key" data-k="'+i+'"'+id+' aria-pressed="'+(cu===i)+'">'+n+'</button>').join('');
+return '<div class="chartbox"><div class="chartctl"><div class="chips" style="justify-content:flex-start;margin-bottom:8px">'+keys+'</div><div class="row" style="justify-content:flex-start;margin:0 0 8px"><button class="btn sm" data-a="tr" data-d="-1"'+id+'>Lebih rendah</button><button class="btn sm" data-a="tr" data-d="1"'+id+'>Lebih tinggi</button><button class="btn sm" data-a="fs" data-d="-1"'+id+'>A−</button><button class="btn sm" data-a="fs" data-d="1"'+id+'>A+</button><button class="btn sm" data-a="tc"'+id+' aria-pressed="'+showC+'">Chord</button><button class="btn sm" data-a="tl"'+id+' aria-pressed="'+showL+'">Lirik</button><button class="btn sm" data-a="ed"'+id+'>Edit</button><button class="btn sm" data-a="pr"'+id+'>Cetak</button>'+(trans?'<button class="btn sm" data-a="perm"'+id+'>Simpan nada ini</button>':'')+'</div><div class="row" style="justify-content:flex-start;margin:0 0 8px"><button class="btn sm" data-a="as"'+id+' aria-pressed="'+asOn+'">'+(asOn?'Stop scroll':'Auto scroll')+'</button><label>Kecepatan</label><input type="range" class="asr" min="1" max="12" value="'+asSpeed+'" style="flex:1;min-width:90px;width:auto" aria-label="Kecepatan auto scroll"><button class="btn sm" data-a="pv"'+id+'>Presenter view</button></div></div><pre class="chart" style="font-size:'+fs+'px">'+(s.x?sheetHtml(s):'Belum ada chord. Tekan Edit untuk menambahkan.')+'</pre></div>'}
+let songs=store.get('songs',[
+{id:1,t:'Canon in D',c:'Pachelbel',k:'D',b:55,x:'D  A  Bm  F#m\nG  D  G  A',s:'latihan'},
+{id:2,t:'Für Elise',c:'Beethoven',k:'A minor',b:120,s:'belajar'},
+{id:3,t:'Greensleeves',c:'Tradisional',k:'E minor',b:90,s:'siap'}]);
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function renderSongs(){store.set('songs',songs);$('list').innerHTML=songs.length?songs.map(s=>'<div class="song"><div class="t"><b>'+esc(s.t)+'</b><small>'+esc([s.c,s.k].filter(Boolean).join(', '))+'</small></div>'+
+(s.b?'<button class="btn sm" data-a="bpm" data-id="'+s.id+'" title="Pakai tempo ini di metronom">'+s.b+' BPM</button>':'')+
+'<button class="btn sm" data-a="ch" data-id="'+s.id+'">Chord</button>'+'<button class="st '+s.s+'" data-a="st" data-id="'+s.id+'">'+s.s+'</button><button class="btn sm" data-a="del" data-id="'+s.id+'" aria-label="Hapus">✕</button></div>'+(openSong===s.id?chartBox(s):'')).join(''):'<div class="empty">Belum ada lagu. Tambahkan lagu pertamamu di bawah.</div>'}
+$('list').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=+b.dataset.id,s=songs.find(x=>x.id===id);if(!s)return;
+if(b.dataset.a==='del')songs=songs.filter(x=>x.id!==id);
+if(b.dataset.a==='st')s.s=ST[(ST.indexOf(s.s)+1)%3];
+if(b.dataset.a==='ch'){openSong=openSong===id?0:id;trans=0;editSong=0;renderSongs();return}
+if(b.dataset.a==='tr'){trans+=+b.dataset.d;renderSongs();return}
+if(b.dataset.a==='ed'){editSong=id;renderSongs();return}
+if(b.dataset.a==='cx'){editSong=0;renderSongs();return}
+if(b.dataset.a==='fs'){fs=Math.max(10,Math.min(28,fs+2*(+b.dataset.d)));renderSongs();return}
+if(b.dataset.a==='tc'){showC=!showC;renderSongs();return}
+if(b.dataset.a==='tl'){showL=!showL;renderSongs();return}
+if(b.dataset.a==='pr'){window.print();return}
+if(b.dataset.a==='as'){setAS(!asOn);return}
+if(b.dataset.a==='pv'){openPv(id,[]);return}
+if(b.dataset.a==='key'){let d=(+b.dataset.k-baseKey(s)+12)%12;if(d>6)d-=12;trans=d;renderSongs();return}
+if(b.dataset.a==='sv'){s.x=$('ex').value;editSong=0;renderSongs();return}
+if(b.dataset.a==='perm'){s.x=(s.x||'').split('\n').map(l=>tline(l,trans)).join('\n');if(/^[A-G][#b]?m?$/.test(s.k||''))s.k=tline(s.k,trans);trans=0;renderSongs();return}
+if(b.dataset.a==='bpm'){setBpm(s.b);location.hash='metronom';return}
+renderSongs()};
+$('fa').onclick=()=>{const t=$('ft').value.trim();if(!t){$('ft').focus();return}
+songs.unshift({id:Date.now(),t,c:$('fc').value.trim(),k:$('fk').value.trim(),b:+$('fb').value||0,x:$('fx').value,s:'belajar'});
+['ft','fc','fk','fb','fx'].forEach(i=>$(i).value='');renderSongs();location.hash='perpustakaan'};
+renderSongs();
+
+/* Chord */
+const CT={'mayor':[0,4,7],'minor (m)':[0,3,7],'7':[0,4,7,10],'maj7':[0,4,7,11],'m7':[0,3,7,10],'sus4':[0,5,7],'dim':[0,3,6]};
+const CS={'mayor':'','minor (m)':'m','7':'7','maj7':'maj7','m7':'m7','sus4':'sus4','dim':'dim'};
+const SHP={C:'x32010',D:'xx0232',E:'022100',G:'320003',A:'x02220',F:'133211',Am:'x02210',Dm:'xx0231',Em:'022000',Bm:'x24432',C7:'x32310',D7:'xx0212',E7:'020100',G7:'320001',A7:'x02020',B7:'x21202',Cmaj7:'x32000',Fmaj7:'xx3210',Am7:'x02010',Dm7:'xx0211',Em7:'022030'};
+function diag(sh){const f=sh.split('').map(c=>c==='x'?-1:+c),nz=f.filter(x=>x>0),base=nz.length&&Math.max(...nz)>4?Math.min(...nz):1;let s='';
+for(let i=0;i<6;i++){const x=20+i*26;s+='<line x1="'+x+'" y1="30" x2="'+x+'" y2="170" stroke="currentColor" stroke-width="1.5"/>';
+if(f[i]===-1)s+='<text x="'+x+'" y="22" text-anchor="middle" font-size="14" fill="currentColor">×</text>';else if(f[i]===0)s+='<circle cx="'+x+'" cy="17" r="5" fill="none" stroke="currentColor"/>';else s+='<circle cx="'+x+'" cy="'+(30+(f[i]-base+1)*28-14)+'" r="9" fill="var(--brass)"/>'}
+for(let r=0;r<=5;r++)s+='<line x1="20" y1="'+(30+r*28)+'" x2="150" y2="'+(30+r*28)+'" stroke="currentColor" stroke-width="'+(r===0&&base===1?4:1)+'"/>';
+if(base>1)s+='<text x="158" y="50" font-size="12" fill="currentColor">'+base+'</text>';return s}
+function renderChord(){const r=+$('cr').value,t=$('ct').value,name=SH[r]+CS[t],sh=SHP[name];$('cn').textContent=name;$('cnotes').textContent='Nada: '+CT[t].map(i=>SH[(r+i)%12]).join(', ');$('cd').innerHTML=sh?diag(sh):'';$('cmsg').textContent=sh?'Gitar, senar 6 ke 1 (× = tidak dimainkan, ○ = senar kosong)':'Diagram tersedia untuk akor umum di posisi terbuka'}
+SH.forEach((n,i)=>$('cr').add(new Option(n,i)));Object.keys(CT).forEach(k=>$('ct').add(new Option(k,k)));
+$('cr').onchange=$('ct').onchange=renderChord;renderChord();
+$('cplay').onclick=()=>{audio();const r=+$('cr').value;CT[$('ct').value].forEach((i,j)=>beep(ctx.currentTime+j*.06,440*Math.pow(2,(48+r+i-69)/12),1.6,.15))};
+
+/* Acara */
+let evs=store.get('events',[]),curEv=store.get('curEv',0);
+function saveEv(){store.set('events',evs);store.set('curEv',curEv)}
+function cur(){return evs.find(e=>e.id===curEv)}
+function renderEv(){
+if(!evs.length){evs=[{id:Date.now(),n:'Acara pertama',d:'',s:[]}];curEv=evs[0].id}
+if(!cur())curEv=evs[0].id;
+const e=cur();
+$('ev').innerHTML=evs.map(x=>'<option value="'+x.id+'"'+(x.id===curEv?' selected':'')+'>'+esc(x.n||'Tanpa nama')+'</option>').join('');
+$('evname').value=e.n;$('evdate').value=e.d;
+e.s=e.s.filter(id=>songs.some(x=>x.id===id));
+$('evlist').innerHTML=e.s.length?e.s.map((id,i)=>{const s=songs.find(x=>x.id===id);return '<div class="song"><span>'+(i+1)+'.</span><div class="t"><b>'+esc(s.t)+'</b><small>'+esc([s.k,s.b?s.b+' BPM':''].filter(Boolean).join(', '))+'</small></div>'+'<button class="btn sm" data-a="ch" data-id="'+id+'">Chord</button>'+'<button class="btn sm" data-a="up" data-i="'+i+'" aria-label="Naik">▲</button><button class="btn sm" data-a="dn" data-i="'+i+'" aria-label="Turun">▼</button><button class="btn sm" data-a="rm" data-i="'+i+'" aria-label="Hapus dari draf">✕</button></div>'}).join(''):'<div class="empty">Draf masih kosong. Pilih lagu dari perpustakaan di bawah.</div>';
+const rest=songs.filter(s=>!e.s.includes(s.id));
+$('evadd').innerHTML=rest.length?rest.map(s=>'<option value="'+s.id+'">'+esc(s.t)+'</option>').join(''):'<option value="">Semua lagu sudah masuk</option>';
+$('evsum').textContent=e.s.length+' lagu dalam draf';
+saveEv()}
+$('evlist').onclick=e=>{const b=e.target.closest('button');if(!b)return;const ev=cur(),i=+b.dataset.i,a=b.dataset.a;
+if(a==='ch'){openSong=+b.dataset.id;trans=0;renderSongs();location.hash='perpustakaan';return}
+if(a==='rm')ev.s.splice(i,1);
+if(a==='up'&&i>0)[ev.s[i-1],ev.s[i]]=[ev.s[i],ev.s[i-1]];
+if(a==='dn'&&i<ev.s.length-1)[ev.s[i+1],ev.s[i]]=[ev.s[i],ev.s[i+1]];
+renderEv()};
+$('ev').onchange=e=>{curEv=+e.target.value;renderEv()};
+$('evn').onclick=()=>{const n={id:Date.now(),n:'Acara baru',d:'',s:[]};evs.push(n);curEv=n.id;renderEv();$('evname').select()};
+$('evd').onclick=()=>{if(evs.length>1){evs=evs.filter(x=>x.id!==curEv);curEv=evs[0].id}else{cur().s=[];cur().n='Acara pertama';cur().d=''}renderEv()};
+$('evname').oninput=e=>{cur().n=e.target.value;saveEv();const o=$('ev').selectedOptions[0];if(o)o.textContent=e.target.value||'Tanpa nama'};
+$('evdate').onchange=e=>{cur().d=e.target.value;saveEv()};
+$('evaddb').onclick=()=>{const v=+$('evadd').value;if(v){cur().s.push(v);renderEv()}};
+
+/* Auto scroll & Presenter */
+function setAS(on){asOn=on;asRun++;document.querySelectorAll('[data-a="as"]').forEach(b=>{b.setAttribute('aria-pressed',on);b.textContent=on?'Stop scroll':'Auto scroll'});if(on){asLast=performance.now();asAcc=0;const g=asRun;requestAnimationFrame(t=>asLoop(t,g))}}
+function asLoop(t,g){if(!asOn||g!==asRun)return;asAcc+=asSpeed*8*(t-asLast)/1000;asLast=t;const px=Math.floor(asAcc);
+if(px>0){asAcc-=px;if(pvId){const el=$('pv');el.scrollTop+=px;if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)return setAS(false)}else{window.scrollBy(0,px);if(innerHeight+scrollY>=document.documentElement.scrollHeight-2)return setAS(false)}}
+requestAnimationFrame(t2=>asLoop(t2,g))}
+document.addEventListener('input',e=>{if(e.target.classList.contains('asr')){asSpeed=+e.target.value;document.querySelectorAll('.asr').forEach(x=>x.value=asSpeed)}});
+function renderPv(){const s=songs.find(x=>x.id===pvId);if(!s){closePv();return}
+const cu=(baseKey(s)+trans+1200)%12;flat=FLATK.includes(cu);const i=pvList.indexOf(pvId),B=(a,t,x)=>'<button class="btn sm" data-a="'+a+'"'+(x||'')+'>'+t+'</button>';
+const keys=KL.map((n,k)=>'<button class="btn sm" data-a="key" data-k="'+k+'" aria-pressed="'+(cu===k)+'">'+n+'</button>').join('');
+$('pvbar').innerHTML='<div class="row" style="justify-content:space-between;margin:0 0 6px"><b>'+esc(s.t)+'</b>'+B('x','Tutup')+'</div><div class="chips" style="justify-content:flex-start;margin-bottom:6px">'+keys+'</div><div class="row" style="justify-content:flex-start;margin:0">'+(pvList.length>1?B('pn','Sebelumnya',' data-d="-1"'+(i<1?' disabled':''))+B('pn','Berikutnya',' data-d="1"'+(i>=pvList.length-1?' disabled':'')):'')+B('tr','Lebih rendah',' data-d="-1"')+B('tr','Lebih tinggi',' data-d="1"')+B('fs','A\u2212',' data-d="-1"')+B('fs','A+',' data-d="1"')+'<button class="btn sm" data-a="tc" aria-pressed="'+showC+'">Chord</button><button class="btn sm" data-a="tl" aria-pressed="'+showL+'">Lirik</button><button class="btn sm" data-a="as" aria-pressed="'+asOn+'">'+(asOn?'Stop scroll':'Auto scroll')+'</button><input type="range" class="asr" min="1" max="12" value="'+asSpeed+'" style="width:110px" aria-label="Kecepatan auto scroll"></div>';
+$('pvpre').style.fontSize=pvFs+'px';$('pvpre').innerHTML=s.x?sheetHtml(s):'Belum ada chord untuk lagu ini.'}
+function openPv(id,list){pvId=id;pvList=list&&list.length?list:[id];setAS(false);$('pv').hidden=false;document.body.style.overflow='hidden';renderPv();$('pv').scrollTop=0;try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>wl=w).catch(()=>{})}catch(e){}}
+function closePv(){pvId=0;$('pv').hidden=true;document.body.style.overflow='';setAS(false);try{wl&&wl.release();wl=null}catch(e){}renderSongs()}
+$('pv').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a,s=songs.find(x=>x.id===pvId);if(!s)return;
+if(a==='x'){closePv();return}
+if(a==='as'){setAS(!asOn);return}
+if(a==='tr')trans+=+b.dataset.d;
+if(a==='key'){let d=(+b.dataset.k-baseKey(s)+12)%12;if(d>6)d-=12;trans=d}
+if(a==='fs')pvFs=Math.max(14,Math.min(60,pvFs+2*(+b.dataset.d)));
+if(a==='tc')showC=!showC;
+if(a==='tl')showL=!showL;
+if(a==='pn'){const j=pvList.indexOf(pvId)+ +b.dataset.d;if(pvList[j]){pvId=pvList[j];trans=0;$('pv').scrollTop=0}}
+renderPv()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&pvId)closePv()});
+$('evpv').onclick=()=>{const e=cur();if(!e||!e.s.length)return;trans=0;openPv(e.s[0],e.s.slice())};
+
+show(location.hash.slice(1));
+</script>
+<script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
+</body>
+</html>
