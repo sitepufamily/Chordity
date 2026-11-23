@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ruang Latihan</title>
 <link rel="manifest" href="manifest.webmanifest">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
 <meta name="theme-color" content="#5b4be8">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -122,11 +124,33 @@ input[type=range]{background:none;border:0;padding:0}
 @media (prefers-reduced-motion:reduce){section.on{animation:none}}
 @media print{nav,h1,.chartctl,.song,.form,section:not(#perpustakaan){display:none!important}#perpustakaan{display:block!important;border:0}}
 @media (prefers-reduced-motion:reduce){#arm,#needle{transition:none}}
+/* akun */
+[hidden]{display:none!important}
+#auth{position:fixed;inset:0;z-index:100;background:var(--bg);background-image:radial-gradient(900px 420px at 85% -10%,color-mix(in srgb,var(--brass) 15%,transparent),transparent);overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 20px) 16px calc(env(safe-area-inset-bottom,0px) + 20px)}
+.acard{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);padding:26px 22px;margin:auto}
+.acard h2{margin:0 0 6px;font-size:1.7rem;letter-spacing:-.035em}
+.acard h2::before{content:"";display:inline-block;width:.5em;height:.5em;border-radius:50%;background:var(--grad);margin-right:.45em;vertical-align:.08em}
+.acard .asub{color:var(--mute);margin:0 0 16px;min-height:3em;font-size:.95rem}
+.atabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--panel2);border-radius:999px;padding:4px;margin-bottom:16px}
+.atabs button{border:0;border-radius:999px;padding:9px 0;background:none;color:var(--mute);font:inherit;font-weight:500;cursor:pointer}
+.atabs button[aria-selected="true"]{background:var(--grad);color:var(--on);font-weight:700;box-shadow:0 4px 14px color-mix(in srgb,var(--brass) 40%,transparent)}
+#aform{display:flex;flex-direction:column;gap:6px}
+#aform input[type=email],#aform input[type=password],#aform input[type=text]{width:100%}
+#aform .btn{width:100%;margin-top:4px}
+.chk{display:flex;gap:8px;align-items:center;margin:2px 0 4px;cursor:pointer}
+.chk input{width:18px;height:18px;accent-color:var(--brass)}
+#aerr{min-height:3em;margin:2px 0}
+.err.ok{color:var(--ok)}
+.acct{display:flex;align-items:center;gap:8px;margin:-6px 0 12px;font-size:.85rem;color:var(--mute)}
+.acct #who{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct #sst{white-space:nowrap}
+@media print{#acct,#auth{display:none!important}}
 </style>
 </head>
 <body>
 <main>
 <h1>Ruang Latihan</h1>
+<div class="acct" id="acct" hidden><span id="who"></span><span id="sst"></span><button class="btn sm" id="out" type="button">Keluar</button></div>
 <nav role="tablist">
 <button role="tab" data-t="metronom">Metronom</button>
 <button role="tab" data-t="tuner">Tuner</button>
@@ -212,10 +236,29 @@ input[type=range]{background:none;border:0;padding:0}
 </section>
 </main>
 
+<div id="auth" hidden role="dialog" aria-label="Masuk ke akun">
+<div class="acard">
+<h2>Ruang Latihan</h2>
+<p class="asub" id="asubt">Masuk untuk menyimpan lagu dan acara, tersinkron di semua perangkat.</p>
+<div id="aload" class="empty" hidden>Memuat…</div>
+<div class="atabs" id="atabs" role="tablist"><button type="button" role="tab" data-m="login" aria-selected="true">Masuk</button><button type="button" role="tab" data-m="register" aria-selected="false">Daftar</button></div>
+<form id="aform" novalidate>
+<div id="aew"><label for="ae">Email</label><input id="ae" type="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false"></div>
+<div><label for="ap" id="aplb">Password</label><input id="ap" type="password" autocomplete="current-password"></div>
+<div id="ap2w"><label for="ap2">Ulangi password</label><input id="ap2" type="password" autocomplete="new-password"></div>
+<label class="chk"><input type="checkbox" id="ashow"> Tampilkan password</label>
+<div class="err" id="aerr" role="alert" aria-live="polite"></div>
+<button class="btn main" id="abtn" type="submit">Masuk</button>
+<button class="btn" id="afor" type="button">Lupa password?</button>
+</form>
+</div>
+</div>
+
 <div id="pv" hidden role="dialog" aria-label="Presenter view"><div id="pvbar"></div><pre class="chart" id="pvpre"></pre></div>
 <script>
 const $=id=>document.getElementById(id);
-const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let onChange=()=>{};
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}onChange(k)}};
 let ctx;
 function audio(){if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();if(ctx.state==='suspended')ctx.resume();return ctx}
 function beep(t,f,len,vol){const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=f;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+len);o.connect(g).connect(ctx.destination);o.start(t);o.stop(t+len+.02)}
@@ -294,10 +337,12 @@ function editBox(s){return '<div class="chartbox"><textarea id="ex" aria-label="
 function chartBox(s){if(editSong===s.id)return editBox(s);const bk=baseKey(s),cu=(bk+trans+1200)%12;flat=FLATK.includes(cu);const id=' data-id="'+s.id+'"';
 const keys=KL.map((n,i)=>'<button class="btn sm" data-a="key" data-k="'+i+'"'+id+' aria-pressed="'+(cu===i)+'">'+n+'</button>').join('');
 return '<div class="chartbox"><div class="chartctl"><div class="chips" style="justify-content:flex-start;margin-bottom:8px">'+keys+'</div><div class="row" style="justify-content:flex-start;margin:0 0 8px"><button class="btn sm" data-a="tr" data-d="-1"'+id+'>Lebih rendah</button><button class="btn sm" data-a="tr" data-d="1"'+id+'>Lebih tinggi</button><button class="btn sm" data-a="fs" data-d="-1"'+id+'>A−</button><button class="btn sm" data-a="fs" data-d="1"'+id+'>A+</button><button class="btn sm" data-a="tc"'+id+' aria-pressed="'+showC+'">Chord</button><button class="btn sm" data-a="tl"'+id+' aria-pressed="'+showL+'">Lirik</button><button class="btn sm" data-a="ed"'+id+'>Edit</button><button class="btn sm" data-a="pr"'+id+'>Cetak</button>'+(trans?'<button class="btn sm" data-a="perm"'+id+'>Simpan nada ini</button>':'')+'</div><div class="row" style="justify-content:flex-start;margin:0 0 8px"><button class="btn sm" data-a="as"'+id+' aria-pressed="'+asOn+'">'+(asOn?'Stop scroll':'Auto scroll')+'</button><label>Kecepatan</label><input type="range" class="asr" min="1" max="12" value="'+asSpeed+'" style="flex:1;min-width:90px;width:auto" aria-label="Kecepatan auto scroll"><button class="btn sm" data-a="pv"'+id+'>Presenter view</button></div></div><pre class="chart" style="font-size:'+fs+'px">'+(s.x?sheetHtml(s):'Belum ada chord. Tekan Edit untuk menambahkan.')+'</pre></div>'}
-let songs=store.get('songs',[
+const SEEDS=[
 {id:1,t:'Canon in D',c:'Pachelbel',k:'D',b:55,x:'D  A  Bm  F#m\nG  D  G  A',s:'latihan'},
 {id:2,t:'Für Elise',c:'Beethoven',k:'A minor',b:120,s:'belajar'},
-{id:3,t:'Greensleeves',c:'Tradisional',k:'E minor',b:90,s:'siap'}]);
+{id:3,t:'Greensleeves',c:'Tradisional',k:'E minor',b:90,s:'siap'}];
+const SEED_JSON=JSON.stringify(SEEDS);
+let songs=store.get('songs',SEEDS);
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function renderSongs(){store.set('songs',songs);$('list').innerHTML=songs.length?songs.map(s=>'<div class="song"><div class="t"><b>'+esc(s.t)+'</b><small>'+esc([s.c,s.k].filter(Boolean).join(', '))+'</small></div>'+
 (s.b?'<button class="btn sm" data-a="bpm" data-id="'+s.id+'" title="Pakai tempo ini di metronom">'+s.b+' BPM</button>':'')+
@@ -394,7 +439,117 @@ renderPv()};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&pvId)closePv()});
 $('evpv').onclick=()=>{const e=cur();if(!e||!e.s.length)return;trans=0;openPv(e.s[0],e.s.slice())};
 
+/* Akun & sinkron (Supabase) */
+const CFG=window.RL_CONFIG||{};
+const sbOn=!!(window.supabase&&/^https?:\/\//.test(CFG.url||'')&&CFG.key&&!/^GANTI/.test(CFG.key));
+let sb=null,user=null,applying=false,dirty=false,pushT=null,recBusy=false,amode='login',authBusy=false,chan=null;
+const REC=/type=recovery/.test(location.hash);
+const LSK=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const setSt=t=>{$('sst').textContent=t};
+function snapshot(){const practice={};try{Object.keys(localStorage).filter(k=>k.startsWith('done-')).forEach(k=>practice[k.slice(5)]=store.get(k,0))}catch(e){}
+return{songs,events:evs,curEv,practice}}
+function wipeLocal(){try{Object.keys(localStorage).filter(k=>k==='songs'||k==='events'||k==='curEv'||k.startsWith('done-')||k.startsWith('rl-')).forEach(k=>localStorage.removeItem(k))}catch(e){}}
+function merge(r,l){const byId=(a,b)=>{const m=new Map();[...(b||[]),...(a||[])].forEach(x=>m.set(x.id,x));return[...m.values()]};
+const pr={...(l.practice||{})};Object.entries(r.practice||{}).forEach(([k,v])=>pr[k]=Math.max(pr[k]||0,v));
+return{songs:byId(r.songs,l.songs),events:byId(r.events,l.events),curEv:r.curEv||l.curEv,practice:pr}}
+function applyData(d,ts){applying=true;
+songs=Array.isArray(d.songs)?d.songs:[];evs=Array.isArray(d.events)?d.events:[];curEv=d.curEv||0;
+Object.entries(d.practice||{}).forEach(([k,v])=>store.set('done-'+k,v));
+store.set('songs',songs);store.set('events',evs);store.set('curEv',curEv);store.set('rl-ts',ts||Date.now());
+openSong=0;editSong=0;renderSongs();renderEv();showToday();applying=false;dirty=false;setSt('✓ Tersinkron')}
+async function pushNow(){clearTimeout(pushT);if(!user)return false;
+try{const{error}=await sb.from('user_data').upsert({user_id:user.id,data:snapshot(),client_ts:store.get('rl-ts',Date.now()),updated_at:new Date().toISOString()});
+if(error)throw error;dirty=false;setSt('✓ Tersinkron');return true}
+catch(e){setSt(navigator.onLine?'Gagal sinkron':'Offline');return false}}
+function isPristine(){let ev=null;try{ev=JSON.parse(LSK('events')||'null')}catch(e){}
+const evOk=!ev||!ev.length||(ev.length===1&&ev[0].n==='Acara pertama'&&!ev[0].d&&!(ev[0].s||[]).length);
+const noPr=!Object.keys(localStorage).some(k=>k.startsWith('done-'));
+return(!LSK('songs')||LSK('songs')===SEED_JSON)&&evOk&&noPr}
+async function reconcile(){if(recBusy||!user)return;recBusy=true;
+try{const{data:row,error}=await sb.from('user_data').select('data,client_ts').eq('user_id',user.id).maybeSingle();if(error)throw error;
+const pristine=isPristine(),lts=store.get('rl-ts',0);
+if(!row){if(!lts)store.set('rl-ts',Date.now());await pushNow()}
+else if(pristine||(lts&&row.client_ts>lts))applyData(row.data||{},row.client_ts);
+else if(!lts){applyData(merge(row.data||{},snapshot()),Date.now());await pushNow()}
+else if(row.client_ts<lts)await pushNow();
+else{dirty=false;setSt('✓ Tersinkron')}}
+catch(e){setSt(navigator.onLine?'Gagal sinkron':'Offline')}
+recBusy=false}
+function touch(k){if(!sb||applying||k.startsWith('rl-')||!store.get('rl-owner',''))return;
+store.set('rl-ts',Date.now());dirty=true;if(user){setSt('Menyimpan…');clearTimeout(pushT);pushT=setTimeout(pushNow,1500)}else setSt('Offline')}
+function subscribe(){if(chan||!user)return;try{chan=sb.channel('ud-'+user.id).on('postgres_changes',{event:'*',schema:'public',table:'user_data',filter:'user_id=eq.'+user.id},()=>{if(!editSong&&!pvId&&!dirty)reconcile()}).subscribe()}catch(e){}}
+async function enter(u){const owner=store.get('rl-owner','');
+if(owner&&owner!==u.id){wipeLocal();location.reload();return}
+user=u;store.set('rl-owner',u.id);store.set('rl-email',u.email||'');
+$('auth').hidden=true;document.body.style.overflow='';
+$('acct').hidden=false;$('who').textContent=u.email||'';
+setSt('Menyinkronkan…');await reconcile();subscribe()}
+async function logout(){if(!confirm('Keluar dari akun ini? Data di perangkat ini akan dibersihkan, data kamu tetap aman di cloud.'))return;
+if(dirty){const ok=await pushNow();if(!ok&&!confirm('Ada perubahan yang belum tersinkron dan akan hilang. Tetap keluar?'))return}
+try{await sb.auth.signOut({scope:'local'})}catch(e){}
+wipeLocal();location.reload()}
+/* UI login */
+const aerr=(t,ok)=>{const e=$('aerr');e.textContent=t||'';e.classList.toggle('ok',!!ok)};
+function emsg(e){const m=((e&&e.message)||'').toLowerCase();
+if(m.includes('invalid login'))return'Email atau password salah.';
+if(m.includes('not confirmed'))return'Email belum dikonfirmasi. Cek kotak masuk kamu.';
+if(m.includes('already registered')||m.includes('already been registered'))return'Email ini sudah terdaftar. Silakan masuk.';
+if(m.includes('at least')&&m.includes('character'))return'Password minimal 6 karakter.';
+if(m.includes('same password'))return'Password baru harus berbeda dari yang lama.';
+if(m.includes('rate limit')||m.includes('too many'))return'Terlalu banyak percobaan. Coba lagi beberapa menit lagi.';
+if(m.includes('fetch')||m.includes('network'))return'Tidak ada koneksi internet.';
+return'Terjadi kesalahan, coba lagi.'}
+function showAuth(m){amode=m;$('auth').hidden=false;document.body.style.overflow='hidden';
+const rec=m==='recover',ld=m==='loading';
+$('aform').hidden=ld;$('atabs').hidden=rec||ld;$('aload').hidden=!ld;$('aew').hidden=rec;
+document.querySelectorAll('#atabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.m===m));
+$('ap2w').style.visibility=m==='login'?'hidden':'visible';
+$('afor').style.visibility=m==='login'?'visible':'hidden';
+$('abtn').textContent={login:'Masuk',register:'Daftar',recover:'Simpan password baru'}[m]||'Masuk';
+$('aplb').textContent=rec?'Password baru':'Password';
+$('ap').autocomplete=m==='login'?'current-password':'new-password';
+$('asubt').textContent=rec?'Masukkan password baru untuk akunmu.':'Masuk untuk menyimpan lagu dan acara, tersinkron di semua perangkat.';
+aerr('')}
+function busy(b){authBusy=b;$('abtn').disabled=b;$('afor').disabled=b;document.querySelectorAll('#aform input').forEach(i=>i.disabled=b)}
+$('atabs').onclick=e=>{const b=e.target.closest('button');if(b&&!authBusy)showAuth(b.dataset.m)};
+$('ashow').onchange=e=>{$('ap').type=$('ap2').type=e.target.checked?'text':'password'};
+$('aform').onsubmit=async e=>{e.preventDefault();if(authBusy||!sb)return;
+const em=$('ae').value.trim(),pw=$('ap').value;aerr('');
+if(amode!=='recover'&&!/^\S+@\S+\.\S+$/.test(em)){aerr('Masukkan email yang valid.');return}
+if(pw.length<6){aerr('Password minimal 6 karakter.');return}
+if(amode!=='login'&&pw!==$('ap2').value){aerr('Password dan ulangannya tidak sama.');return}
+busy(true);
+try{
+if(amode==='login'){const{data,error}=await sb.auth.signInWithPassword({email:em,password:pw});if(error)throw error;await enter(data.user)}
+else if(amode==='register'){const{data,error}=await sb.auth.signUp({email:em,password:pw});if(error)throw error;
+if(data.user&&data.user.identities&&!data.user.identities.length)throw{message:'already registered'};
+if(data.session)await enter(data.user);
+else{showAuth('login');$('ae').value=em;aerr('Pendaftaran berhasil. Cek email kamu untuk konfirmasi, lalu masuk.',1)}}
+else{const{error}=await sb.auth.updateUser({password:pw});if(error)throw error;
+const{data:{session}}=await sb.auth.getSession();if(session)await enter(session.user);else showAuth('login')}
+}catch(err){aerr(emsg(err))}
+busy(false)};
+$('afor').onclick=async()=>{if(authBusy||!sb)return;const em=$('ae').value.trim();
+if(!/^\S+@\S+\.\S+$/.test(em)){aerr('Isi email dulu, lalu tekan Lupa password.');return}
+busy(true);const{error}=await sb.auth.resetPasswordForEmail(em,{redirectTo:location.origin+location.pathname});busy(false);
+aerr(error?emsg(error):'Tautan reset password sudah dikirim ke email kamu.',!error)};
+$('out').onclick=logout;
+async function boot(){if(!sbOn)return;
+if(!sb){sb=window.supabase.createClient(CFG.url,CFG.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+sb.auth.onAuthStateChange((ev)=>{if(ev==='PASSWORD_RECOVERY')showAuth('recover');else if(ev==='SIGNED_OUT'&&user){user=null;showAuth('login')}});
+onChange=touch}
+showAuth('loading');
+let session=null;try{session=(await sb.auth.getSession()).data.session}catch(e){}
+if(REC&&session){showAuth('recover');return}
+if(session)await enter(session.user);
+else if(!navigator.onLine&&store.get('rl-owner','')){$('auth').hidden=true;document.body.style.overflow='';$('acct').hidden=false;$('who').textContent=store.get('rl-email','');setSt('Offline')}
+else showAuth('login')}
+addEventListener('online',()=>{if(sb)user?reconcile():boot()});
+addEventListener('offline',()=>{if(user)setSt('Offline')});
+document.addEventListener('visibilitychange',()=>{if(!user)return;if(document.visibilityState==='hidden'){if(dirty)pushNow()}else if(!dirty&&!editSong&&!pvId)reconcile()});
+
 show(location.hash.slice(1));
+boot();
 </script>
 <script>if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));</script>
 </body>

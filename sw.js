@@ -1,5 +1,5 @@
-const CACHE = 'ruang-latihan-v1';
-const ASSETS = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
+const CACHE = 'ruang-latihan-v2';
+const ASSETS = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
@@ -28,8 +28,21 @@ self.addEventListener('fetch', e => {
     );
     return;
   }
-  // Aset lain (termasuk Google Fonts): cache dulu, simpan saat pertama diambil
-  if (url.origin === location.origin || url.hostname.endsWith('googleapis.com') || url.hostname.endsWith('gstatic.com')) {
+  // File sendiri (mis. config.js): tampilkan dari cache, perbarui di belakang layar
+  if (url.origin === location.origin) {
+    e.respondWith(
+      caches.match(req).then(hit => {
+        const net = fetch(req).then(res => {
+          if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
+          return res;
+        }).catch(() => hit);
+        return hit || net;
+      })
+    );
+    return;
+  }
+  // Font dan library dari CDN: cache dulu, simpan saat pertama diambil
+  if (['googleapis.com', 'gstatic.com', 'jsdelivr.net'].some(h => url.hostname.endsWith(h))) {
     e.respondWith(
       caches.match(req).then(hit => hit || fetch(req).then(res => {
         if (res.ok || res.type === 'opaque') {
