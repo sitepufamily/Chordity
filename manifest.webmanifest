@@ -1,6 +1,6 @@
 {
-  "name": "Ruang Latihan",
-  "short_name": "Latihan",
+  "name": "Chordity",
+  "short_name": "Chordity",
   "description": "Metronom, tuner, timer, perpustakaan lagu dan chord untuk latihan musik.",
   "lang": "id",
   "start_url": "./",
