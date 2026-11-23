@@ -461,6 +461,10 @@ let sb=null,user=null,applying=false,dirty=false,pushT=null,recBusy=false,amode=
 const REC=/type=recovery/.test(location.hash);
 const LSK=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
 const setSt=t=>{$('sst').textContent=t};
+let lastErr='';
+function syncErr(e){lastErr=e&&typeof e==='object'?[e.code,e.message,e.details,e.hint].filter(Boolean).join(' | ')||String(e):String(e);try{console.error('Chordity sync:',e)}catch(_){}setSt(navigator.onLine?'Gagal sinkron':'Offline');$('sst').title=lastErr}
+$('sst').style.cursor='pointer';
+$('sst').onclick=()=>{if(/^Gagal/.test($('sst').textContent)){alert('Detail error sinkron:\n\n'+(lastErr||'(tidak ada detail)'));reconcile()}};
 function snapshot(){const practice={};try{Object.keys(localStorage).filter(k=>k.startsWith('done-')).forEach(k=>practice[k.slice(5)]=store.get(k,0))}catch(e){}
 return{songs,events:evs,curEv,practice}}
 function wipeLocal(){try{Object.keys(localStorage).filter(k=>k==='songs'||k==='events'||k==='curEv'||k.startsWith('done-')||k.startsWith('rl-')).forEach(k=>localStorage.removeItem(k))}catch(e){}}
@@ -475,7 +479,7 @@ openSong=0;editSong=0;renderSongs();renderEv();showToday();applying=false;dirty=
 async function pushNow(){clearTimeout(pushT);if(!user)return false;
 try{const{error}=await sb.from('user_data').upsert({user_id:user.id,data:snapshot(),client_ts:store.get('rl-ts',Date.now()),updated_at:new Date().toISOString()});
 if(error)throw error;dirty=false;setSt('✓ Tersinkron');return true}
-catch(e){setSt(navigator.onLine?'Gagal sinkron':'Offline');return false}}
+catch(e){syncErr(e);return false}}
 function isPristine(){let ev=null;try{ev=JSON.parse(LSK('events')||'null')}catch(e){}
 const evOk=!ev||!ev.length||(ev.length===1&&ev[0].n==='Acara pertama'&&!ev[0].d&&!(ev[0].s||[]).length);
 const noPr=!Object.keys(localStorage).some(k=>k.startsWith('done-'));
@@ -488,7 +492,7 @@ else if(pristine||(lts&&row.client_ts>lts))applyData(row.data||{},row.client_ts)
 else if(!lts){applyData(merge(row.data||{},snapshot()),Date.now());await pushNow()}
 else if(row.client_ts<lts)await pushNow();
 else{dirty=false;setSt('✓ Tersinkron')}}
-catch(e){setSt(navigator.onLine?'Gagal sinkron':'Offline')}
+catch(e){syncErr(e)}
 recBusy=false}
 function touch(k){if(!sb||applying||k.startsWith('rl-')||!store.get('rl-owner',''))return;
 store.set('rl-ts',Date.now());dirty=true;if(user){setSt('Menyimpan…');clearTimeout(pushT);pushT=setTimeout(pushNow,1500)}else setSt('Offline')}
