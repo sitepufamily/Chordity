@@ -170,7 +170,7 @@ pre.chart .gp{height:.75em;break-inside:avoid}
 @media (prefers-reduced-motion:reduce){#arm,#needle{transition:none}}
 /* akun */
 [hidden]{display:none!important}
-#auth{position:fixed;inset:0;z-index:100;background:#1a1612 linear-gradient(rgba(10,12,20,.40),rgba(10,12,20,.65)),url(bg.jpg) 72% center/cover no-repeat;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 20px) 16px calc(env(safe-area-inset-bottom,0px) + 20px)}
+#auth{position:fixed;inset:0;z-index:100;background:linear-gradient(rgba(10,12,20,.40),rgba(10,12,20,.66)),url(bg.jpg) 72% center/cover no-repeat #14110e;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 20px) 16px calc(env(safe-area-inset-bottom,0px) + 20px)}
 .acard{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);padding:26px 22px;margin:auto}
 .acard h2{margin:0 0 6px;font-size:1.7rem;letter-spacing:-.035em}
 .acard h2::before{content:"";display:inline-block;width:.5em;height:.5em;border-radius:50%;background:var(--grad);margin-right:.45em;vertical-align:.08em}
@@ -222,6 +222,14 @@ h1::before{animation:breathe 3.4s ease-in-out infinite}
 @keyframes rip{to{transform:scale(1);opacity:0}}
 @media (hover:hover){.btn:not(.t3d):not(:active):hover{transform:translateY(-2px)}.song{transition:transform .25s cubic-bezier(.22,1,.36,1)}.song:hover{transform:translateX(5px)}}
 @media (prefers-reduced-motion:reduce){#life .bg,#life .haze,h1::before{animation:none!important}#fx,#life .spot{display:none}}
+
+#aerr{min-height:0}
+#aerr:empty{display:none}
+#aform .fold{overflow:hidden;max-height:96px;transition:max-height .38s cubic-bezier(.22,1,.36,1),opacity .28s,margin .38s,padding .38s,border-width .38s,transform .12s,background .2s,visibility 0s}
+#aform .fold.c{max-height:0;opacity:0;visibility:hidden;margin-top:-6px;padding-top:0;padding-bottom:0;border-width:0;pointer-events:none;transition:max-height .38s cubic-bezier(.22,1,.36,1),opacity .2s,margin .38s,padding .38s,border-width .38s,visibility 0s .38s}
+#auth:not([hidden]) .acard{animation:arise .55s cubic-bezier(.22,1,.36,1) both}
+@keyframes arise{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#auth:not([hidden]) .acard{animation:none}#aform .fold{transition:none!important}}
 </style>
 </head>
 <body>
@@ -351,11 +359,11 @@ h1::before{animation:breathe 3.4s ease-in-out infinite}
 <form id="aform" novalidate>
 <div id="aew"><label for="ae">Email</label><input id="ae" type="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false"></div>
 <div><label for="ap" id="aplb">Password</label><input id="ap" type="password" autocomplete="current-password"></div>
-<div id="ap2w"><label for="ap2">Ulangi password</label><input id="ap2" type="password" autocomplete="new-password"></div>
+<div id="ap2w" class="fold c"><label for="ap2">Ulangi password</label><input id="ap2" type="password" autocomplete="new-password"></div>
 <label class="chk"><input type="checkbox" id="ashow"> Tampilkan password</label>
 <div class="err" id="aerr" role="alert" aria-live="polite"></div>
 <button class="btn main" id="abtn" type="submit">Masuk</button>
-<button class="btn" id="afor" type="button">Lupa password?</button>
+<button class="btn fold" id="afor" type="button">Lupa password?</button>
 </form>
 </div>
 </div>
@@ -700,8 +708,8 @@ function showAuth(m){amode=m;$('auth').hidden=false;document.body.style.overflow
 const rec=m==='recover',ld=m==='loading';
 $('aform').hidden=ld;$('atabs').hidden=rec||ld;$('aload').hidden=!ld;$('aew').hidden=rec;
 document.querySelectorAll('#atabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.m===m));
-$('ap2w').style.visibility=m==='login'?'hidden':'visible';
-$('afor').style.visibility=m==='login'?'visible':'hidden';
+$('ap2w').classList.toggle('c',m==='login');
+$('afor').classList.toggle('c',m!=='login');
 $('abtn').textContent={login:'Masuk',register:'Daftar',recover:'Simpan password baru'}[m]||'Masuk';
 $('aplb').textContent=rec?'Password baru':'Password';
 $('ap').autocomplete=m==='login'?'current-password':'new-password';
