@@ -125,6 +125,13 @@ pre.chart .u{break-inside:avoid}
 pre.chart .u.h{break-after:avoid}
 pre.chart .gp{height:.75em;break-inside:avoid}
 @media (min-width:980px){main:has(#perpustakaan.on pre.c2){max-width:1040px}}
+@media (min-width:900px){main:has(#scale.on){max-width:860px}}
+.fbh{display:flex;align-items:baseline;gap:10px;margin:14px 0 4px;flex-wrap:wrap}.fbh span{color:var(--mute);font-size:.85rem}
+.fbscroll{overflow-x:auto;padding-bottom:4px}.fbscroll svg{display:block;min-width:640px;width:100%;height:auto}
+.fbf{stroke:var(--line);stroke-width:1.5}.fbn{stroke:var(--ink);stroke-width:4}.fbs{stroke:var(--mute);stroke-linecap:round}.fbi{fill:var(--line)}
+.fbl,.fbt{fill:var(--mute);font:600 11px system-ui,sans-serif;text-anchor:middle}
+.fnn{fill:var(--ink)}.fnn.r{fill:var(--brass)}.fnn.d{fill:var(--mute);opacity:.35}
+.fnt{font:700 11px system-ui,sans-serif;text-anchor:middle;fill:var(--bg);pointer-events:none}.fnt.r{fill:var(--on)}
 @media (min-width:460px){pre.chart.c2{column-count:2;column-gap:22px;column-rule:1px solid var(--line)}#pvpre.c2{max-width:1400px}}
 @media (prefers-reduced-motion:reduce){section.on{animation:none}}
 @media print{nav,h1,.chartctl,.song,.form,section:not(#perpustakaan){display:none!important}#perpustakaan{display:block!important;border:0}}
@@ -163,6 +170,7 @@ pre.chart .gp{height:.75em;break-inside:avoid}
 <button role="tab" data-t="perpustakaan">Lagu</button>
 <button role="tab" data-t="tambah">Tambah</button>
 <button role="tab" data-t="chord">Chord</button>
+<button role="tab" data-t="scale">Scale</button>
 <button role="tab" data-t="acara">Acara</button>
 </nav>
 
@@ -231,6 +239,15 @@ pre.chart .gp{height:.75em;break-inside:avoid}
 <div class="row"><button class="btn main" id="cplay">Dengarkan</button></div>
 </section>
 
+<section id="scale">
+<div class="row"><label for="sr">Nada dasar</label><select id="sr"></select><select id="sk" aria-label="Jenis scale"></select></div>
+<div class="sub" id="snotes"></div>
+<div class="row"><label>Posisi</label><div class="chips" id="spos"></div></div>
+<div class="row"><div class="chips" id="sins"></div><div class="chips" id="slab"></div></div>
+<div id="sfb"></div>
+<div class="sub" id="shint"></div>
+</section>
+
 <section id="acara">
 <div class="row"><select id="ev" aria-label="Pilih acara"></select><button class="btn sm" id="evn">Acara baru</button><button class="btn sm" id="evd">Hapus</button></div>
 <div class="row"><input id="evname" placeholder="Nama acara" aria-label="Nama acara"><input id="evdate" type="date" aria-label="Tanggal acara"></div>
@@ -269,8 +286,8 @@ function audio(){if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)
 function beep(t,f,len,vol){const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=f;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+len);o.connect(g).connect(ctx.destination);o.start(t);o.stop(t+len+.02)}
 
 /* Tab */
-const tabs=['metronom','tuner','timer','perpustakaan','tambah','chord','acara'];
-function show(n){if(!tabs.includes(n))n='metronom';tabs.forEach(t=>$(t).classList.toggle('on',t===n));document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===n));if(n!=='tuner')stopTuner();if(n==='acara')renderEv()}
+const tabs=['metronom','tuner','timer','perpustakaan','tambah','chord','scale','acara'];
+function show(n){if(!tabs.includes(n))n='metronom';tabs.forEach(t=>$(t).classList.toggle('on',t===n));document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===n));if(n!=='tuner')stopTuner();if(n==='acara')renderEv();if(n==='scale')renderScale()}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.t});
 addEventListener('hashchange',()=>show(location.hash.slice(1)));
 
@@ -397,6 +414,54 @@ function renderChord(){const r=+$('cr').value,t=$('ct').value,name=SH[r]+CS[t],s
 SH.forEach((n,i)=>$('cr').add(new Option(n,i)));Object.keys(CT).forEach(k=>$('ct').add(new Option(k,k)));
 $('cr').onchange=$('ct').onchange=renderChord;renderChord();
 $('cplay').onclick=()=>{audio();const r=+$('cr').value;CT[$('ct').value].forEach((i,j)=>beep(ctx.currentTime+j*.06,440*Math.pow(2,(48+r+i-69)/12),1.6,.15))};
+
+/* Scale: bentuk scale di fretboard bass & gitar */
+const SC_R=['C','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'],SC_DEG=['1','b2','2','b3','3','4','b5','5','b6','6','b7','7'],SC_LET='CDEFGAB',SC_NP=[0,2,4,5,7,9,11],SC_FR=17,
+SC_T=[{k:'mayor',n:'Mayor',iv:[0,2,4,5,7,9,11]},{k:'minor',n:'Minor (natural)',iv:[0,2,3,5,7,8,10]},{k:'pmay',n:'Pentatonik Mayor',iv:[0,2,4,7,9]},{k:'pmin',n:'Pentatonik Minor',iv:[0,3,5,7,10]},{k:'blues',n:'Blues',iv:[0,3,5,6,7,10],pat:[0,3,5,7,10],ex:[6]},{k:'dor',n:'Dorian',iv:[0,2,3,5,7,9,10]},{k:'mix',n:'Mixolydian',iv:[0,2,4,5,7,9,10]},{k:'hmin',n:'Minor Harmonik',iv:[0,2,3,5,7,8,11]}],
+SC_I=[{id:'bass',n:'Bass',s:[28,33,38,43],l:['E','A','D','G']},{id:'gitar',n:'Gitar',s:[40,45,50,55,59,64],l:['E','A','D','G','B','E']}];
+let sc=Object.assign({r:0,k:'mayor',p:0,i:'both',m:'nada'},store.get('rl-sc',{}));
+if(!(sc.r>=0&&sc.r<12))sc.r=0;if(!SC_T.some(t=>t.k===sc.k))sc.k='mayor';
+function scSpell(r,iv){const t=(SC_LET.indexOf(SC_R[r][0])+ +SC_DEG[iv].slice(-1)-1)%7;let d=(((r+iv)%12-SC_NP[t])%12+12)%12;if(d>6)d-=12;return SC_LET[t]+(d>0?'#'.repeat(d):'b'.repeat(-d))}
+function scPat(ins,r,T,j){const iv=T.pat||T.iv,per=iv.length===7?3:2,set=new Set(iv.map(x=>(r+x)%12)),low=ins.s[0],L=[];
+for(let p=low;p<low+48;p++)if(set.has(p%12))L.push(p);
+let ix=L.findIndex(p=>p%12===(r+iv[j])%12);const o=[];
+ins.s.forEach((b,s)=>{for(let q=0;q<per;q++)o.push([s,L[ix++]-b])});
+let best=null;[-12,0,12].forEach(sh=>{const f=o.map(x=>x[1]+sh);if(Math.min(...f)<0)return;const ov=f.filter(x=>x>SC_FR).length,mx=Math.max(...f);if(!best||ov<best.ov||(ov===best.ov&&mx<best.mx))best={sh,ov,mx}});
+const sh=best?best.sh:12,P=o.map(x=>[x[0],x[1]+sh]).filter(x=>x[1]>=0&&x[1]<=SC_FR);
+if(T.ex&&P.length){const mn=Math.min(...P.map(x=>x[1])),mx=Math.max(...P.map(x=>x[1]));ins.s.forEach((b,s)=>{for(let f=mn;f<=mx;f++)if(T.ex.includes(((b+f-r)%12+12)%12)&&!P.some(x=>x[0]===s&&x[1]===f))P.push([s,f])})}
+return P}
+function scSvg(ins,r,T,P){const ns=ins.s.length,G=28,top=20,W=760,x0=66,fw=(W-x0-8)/SC_FR,H=top+(ns-1)*G+44,y=s=>top+(ns-1-s)*G,xm=f=>f?x0+(f-.5)*fw:x0-20,
+set=new Set(T.iv),ps=P&&new Set(P.map(x=>x[0]+':'+x[1])),y0=y(ns-1)-8,y1=y(0)+8,ym=(y(0)+y(ns-1))/2,dy=(ns-1)*G/4;
+let o='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Fretboard '+ins.n+'">';
+for(let f=1;f<=SC_FR;f++)o+='<line class="fbf" x1="'+(x0+f*fw)+'" y1="'+y0+'" x2="'+(x0+f*fw)+'" y2="'+y1+'"/>';
+o+='<line class="fbn" x1="'+x0+'" y1="'+(y0-1)+'" x2="'+x0+'" y2="'+(y1+1)+'"/>';
+[3,5,7,9,15,17].forEach(f=>o+='<circle class="fbi" cx="'+xm(f)+'" cy="'+ym+'" r="5"/>');
+o+='<circle class="fbi" cx="'+xm(12)+'" cy="'+(ym-dy)+'" r="5"/><circle class="fbi" cx="'+xm(12)+'" cy="'+(ym+dy)+'" r="5"/>';
+for(let s=0;s<ns;s++){o+='<line class="fbs" stroke-width="'+(2.8-s*.35).toFixed(2)+'" x1="'+(x0-36)+'" y1="'+y(s)+'" x2="'+(W-8)+'" y2="'+y(s)+'"/><text class="fbl" x="10" y="'+(y(s)+4)+'">'+ins.l[s]+'</text>'}
+[3,5,7,9,12,15,17].forEach(f=>o+='<text class="fbt" x="'+xm(f)+'" y="'+(H-8)+'">'+f+'</text>');
+for(let s=0;s<ns;s++)for(let f=0;f<=SC_FR;f++){const i=((ins.s[s]+f-r)%12+12)%12;if(!set.has(i))continue;
+const on=!ps||ps.has(s+':'+f),rt=i===0,cx=xm(f),cy=y(s);
+if(!on){o+='<circle class="fnn d" cx="'+cx+'" cy="'+cy+'" r="5"/>';continue}
+o+='<circle class="fnn'+(rt?' r':'')+'" cx="'+cx+'" cy="'+cy+'" r="11"/><text class="fnt'+(rt?' r':'')+'" x="'+cx+'" y="'+(cy+4)+'">'+(sc.m==='nada'?scSpell(r,i):SC_DEG[i])+'</text>'}
+return o+'</svg>'}
+function renderScale(){const T=SC_T.find(t=>t.k===sc.k),pat=T.pat||T.iv;if(sc.p>pat.length)sc.p=0;
+$('sr').value=sc.r;$('sk').value=sc.k;
+$('snotes').textContent='Nada: '+T.iv.map(i=>scSpell(sc.r,i)).join(' ');
+const chip=(a,v,t,on,x)=>'<button class="btn sm" type="button" data-'+a+'="'+v+'" aria-pressed="'+on+'"'+(x||'')+'>'+t+'</button>';
+$('spos').innerHTML=chip('p',0,'Semua',sc.p===0)+pat.map((_,j)=>chip('p',j+1,j+1,sc.p===j+1,' aria-label="Posisi '+(j+1)+'"')).join('');
+$('sins').innerHTML=[['both','Keduanya'],['bass','Bass'],['gitar','Gitar']].map(a=>chip('i',a[0],a[1],sc.i===a[0])).join('');
+$('slab').innerHTML=[['nada','Nada'],['derajat','Derajat']].map(a=>chip('m',a[0],a[1],sc.m===a[0])).join('');
+let h='';SC_I.forEach(ins=>{if(sc.i!=='both'&&sc.i!==ins.id)return;const P=sc.p?scPat(ins,sc.r,T,sc.p-1):null;
+let cap='';if(P&&P.length){const f=P.map(x=>x[1]);cap=' · Fret '+Math.min(...f)+'–'+Math.max(...f)}
+h+='<div class="fbh"><b>'+ins.n+'</b><span>'+ins.l.join(' ')+cap+'</span></div><div class="fbscroll"'+(P&&P.length?' data-f="'+Math.min(...P.map(x=>x[1]))+'"':'')+'>'+scSvg(ins,sc.r,T,P)+'</div>'});
+$('sfb').innerHTML=h;
+document.querySelectorAll('#sfb .fbscroll').forEach(e=>{const f=+e.dataset.f||0;e.scrollLeft=f>2?Math.max(0,(66+(f-1.6)*((760-74)/SC_FR))/760*e.scrollWidth-6):0});
+$('shint').textContent=(sc.p?'Titik pudar = nada scale lain di luar bentuk. Posisi '+sc.p+' dimulai dari derajat ke-'+sc.p+' di senar terendah. ':'Pilih nomor posisi untuk melihat satu bentuk scale. ')+'Titik berwarna = nada dasar. Geser diagram ke samping jika layar sempit.';
+store.set('rl-sc',sc)}
+SC_R.forEach((n,i)=>$('sr').add(new Option(n,i)));SC_T.forEach(t=>$('sk').add(new Option(t.n,t.k)));
+$('sr').onchange=()=>{sc.r=+$('sr').value;renderScale()};$('sk').onchange=()=>{sc.k=$('sk').value;renderScale()};
+$('scale').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;if(d.p!==undefined)sc.p=+d.p;else if(d.i)sc.i=d.i;else if(d.m)sc.m=d.m;else return;renderScale()});
+renderScale();
 
 /* Acara */
 let evs=store.get('events',[]),curEv=store.get('curEv',0);
