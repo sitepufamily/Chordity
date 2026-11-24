@@ -236,7 +236,7 @@ main{position:relative;display:flex;flex-direction:column;width:100%;max-width:6
 main>*{flex-shrink:0}
 nav{margin-bottom:0}
 #deck{position:relative;flex:1 1 auto;min-height:0;margin-top:16px}
-section{display:block;position:absolute;inset:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--mute) 45%,transparent) transparent;visibility:hidden;opacity:0;pointer-events:none;z-index:0;touch-action:pan-y}
+section{display:block;position:absolute;inset:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;-ms-overflow-style:none;visibility:hidden;opacity:0;pointer-events:none;z-index:0;touch-action:pan-y}
 section.on{visibility:visible;opacity:1;pointer-events:auto;z-index:2}
 section.out{visibility:visible;z-index:1;pointer-events:none}
 input[type=range]{touch-action:none}
@@ -256,6 +256,8 @@ nav button{flex:1 0 auto;min-width:max-content;text-overflow:clip}
 .bak small{color:var(--mute);line-height:1.45}
 .bak .row{justify-content:flex-start;margin:6px 0 2px}
 #bmsg{min-height:1.2em;color:var(--ok)}#bmsg.e{color:var(--brass)}
+section::-webkit-scrollbar,#auth::-webkit-scrollbar{display:none;width:0;height:0}
+#auth{scrollbar-width:none;-ms-overflow-style:none}
 </style>
 </head>
 <body>
