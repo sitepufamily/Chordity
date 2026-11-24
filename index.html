@@ -127,7 +127,6 @@ input[type=range]{background:none;border:0;padding:0}
 pre.chart .u{break-inside:avoid}
 pre.chart .u.h{break-after:avoid}
 pre.chart .gp{height:.75em;break-inside:avoid}
-@media (min-width:980px){main:has(#perpustakaan.on pre.c2){max-width:1040px}}
 /* tuner 3D */
 .tplate{position:relative;margin:6px auto 14px;padding:16px 14px 18px;border-radius:30px;color:#eceff5;background:radial-gradient(120% 90% at 50% 0%,#2b3253 0%,#161b2c 55%,#0c1018 100%);box-shadow:0 34px 50px -22px rgba(0,0,0,.65),0 2px 0 rgba(255,255,255,.14) inset,0 -12px 26px rgba(0,0,0,.5) inset,0 0 0 1px rgba(255,255,255,.07);transform:perspective(900px) rotateX(calc(var(--rx,10)*1deg)) rotateY(calc(var(--ry,0)*1deg));transform-style:preserve-3d;transition:transform .18s ease-out;will-change:transform}
 .tplate::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(160deg,rgba(255,255,255,.15),transparent 36%);pointer-events:none}
@@ -157,7 +156,6 @@ pre.chart .gp{height:.75em;break-inside:avoid}
 .key:active{transform:translateY(4px);box-shadow:0 1px 0 var(--line),0 3px 6px rgba(0,0,0,.2)}
 .key.on{background:var(--grad);color:var(--on);box-shadow:0 5px 0 color-mix(in srgb,var(--brass) 55%,#000),0 0 20px color-mix(in srgb,var(--brass) 55%,transparent)}
 @media (prefers-reduced-motion:reduce){.tplate{transition:none}.key,.btn.main.t3d{transition:none}}
-@media (min-width:900px){main:has(#scale.on){max-width:860px}}
 .fbh{display:flex;align-items:baseline;gap:10px;margin:14px 0 4px;flex-wrap:wrap}.fbh span{color:var(--mute);font-size:.85rem}
 .fbscroll{overflow-x:auto;padding-bottom:4px}.fbscroll svg{display:block;min-width:640px;width:100%;height:auto}
 .fbf{stroke:var(--line);stroke-width:1.5}.fbn{stroke:var(--ink);stroke-width:4}.fbs{stroke:var(--mute);stroke-linecap:round}.fbi{fill:var(--line)}
@@ -230,6 +228,29 @@ h1::before{animation:breathe 3.4s ease-in-out infinite}
 #auth:not([hidden]) .acard{animation:arise .55s cubic-bezier(.22,1,.36,1) both}
 @keyframes arise{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){#auth:not([hidden]) .acard{animation:none}#aform .fold{transition:none!important}}
+
+/* ===== Ukuran tetap: satu panggung untuk semua tab ===== */
+html{height:100%;height:100dvh;overflow:hidden}
+body{height:100%;margin:0;display:flex;justify-content:center;align-items:center;overflow:hidden}
+main{position:relative;display:flex;flex-direction:column;width:100%;max-width:600px;height:100%;max-height:920px;padding:16px 16px 20px;overflow:clip}
+main>*{flex-shrink:0}
+nav{margin-bottom:0}
+#deck{position:relative;flex:1 1 auto;min-height:0;margin-top:16px}
+section{display:block;position:absolute;inset:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--mute) 45%,transparent) transparent;visibility:hidden;opacity:0;pointer-events:none;z-index:0;touch-action:pan-y}
+section.on{visibility:visible;opacity:1;pointer-events:auto;z-index:2}
+section.out{visibility:visible;z-index:1;pointer-events:none}
+input[type=range]{touch-action:none}
+@keyframes slout{from{opacity:var(--oo,1);transform:translate3d(var(--ox,0px),0,0) scale(var(--os,1))}to{opacity:0;transform:translate3d(calc(var(--dir,1)*-32px + var(--ox,0px)*.4),0,0) scale(.97)}}
+section.out{animation-duration:.3s}
+@media (max-height:560px){#greet{display:none}h1{font-size:1.45rem;margin:0 0 8px}#deck{margin-top:10px}}
+
+/* ===== Perbaikan: nav, tepi background, header tinggi tetap ===== */
+nav button{flex:1 0 auto;min-width:max-content;text-overflow:clip}
+#life .bgw{inset:-100px}
+#greet{height:1.5em;min-height:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.92rem;line-height:1.5}
+.acct{position:absolute;top:14px;right:16px;left:auto;margin:0;max-width:min(58%,calc(100% - 190px));z-index:6}
+.acct #who{color:rgba(255,255,255,.9);text-shadow:0 1px 8px rgba(0,0,0,.55)}
+.acct #sst{color:rgba(255,255,255,.75)}
 </style>
 </head>
 <body>
@@ -249,7 +270,7 @@ h1::before{animation:breathe 3.4s ease-in-out infinite}
 <button role="tab" data-t="scale">Scale</button>
 <button role="tab" data-t="acara">Acara</button>
 </nav>
-
+<div id="deck">
 <section id="metronom">
 <div class="stage"><div id="arm"></div><div class="base"></div></div>
 <div class="dots" id="dots"></div>
@@ -348,6 +369,7 @@ h1::before{animation:breathe 3.4s ease-in-out infinite}
 <div class="row"><button class="btn main" id="evpv">Presenter view</button></div>
 <div class="sub" id="evsum"></div>
 </section>
+</div>
 </main>
 
 <div id="auth" hidden role="dialog" aria-label="Masuk ke Chordity">
@@ -381,11 +403,31 @@ function beep(t,f,len,vol){const o=ctx.createOscillator(),g=ctx.createGain();o.f
 const tabs=['metronom','tuner','timer','perpustakaan','tambah','chord','scale','acara'];
 let curTab=null,swT=0;
 function movePill(n,instant){const b=document.querySelector('nav button[data-t="'+n+'"]'),p=$('pill'),nv=b&&b.parentElement;if(!b)return;if(instant)p.classList.add('nt');p.style.width=b.offsetWidth+'px';p.style.transform='translateX('+b.offsetLeft+'px)';if(instant){p.offsetWidth;p.classList.remove('nt')}try{nv.scrollTo({left:b.offsetLeft-(nv.clientWidth-b.offsetWidth)/2,behavior:instant?'auto':'smooth'})}catch(e){}}
-function swap(n){const first=curTab===null,from=curTab,dir=first||from===n?1:(tabs.indexOf(n)>tabs.indexOf(from)?1:-1),el=$(n),old=from&&$(from),tk=++swT;tabs.forEach(t=>{if(t!==n&&t!==from)$(t).classList.remove('on','out')});curTab=n;window.lifeTab&&lifeTab(tabs.indexOf(n));if(first||from===n||matchMedia('(prefers-reduced-motion:reduce)').matches){tabs.forEach(t=>$(t).classList.toggle('on',t===n));return}
-old.style.setProperty('--dir',dir);el.style.setProperty('--dir',dir);old.classList.remove('on');old.classList.add('out');setTimeout(()=>{if(tk!==swT)return;old.classList.remove('out');el.classList.remove('on');void el.offsetWidth;el.classList.add('on')},150)}
+function swap(n){const first=curTab===null,from=curTab,rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+if(first||from===n||rm){tabs.forEach(t=>$(t).classList.remove('out'));tabs.forEach(t=>$(t).classList.toggle('on',t===n));curTab=n;window.lifeTab&&lifeTab(tabs.indexOf(n));return}
+const dir=tabs.indexOf(n)>tabs.indexOf(from)?1:-1,el=$(n),old=$(from);
+tabs.forEach(t=>{if(t!==n&&t!==from)$(t).classList.remove('on','out')});
+curTab=n;window.lifeTab&&lifeTab(tabs.indexOf(n));
+clearTimeout(old._t);el.style.setProperty('--dir',dir);old.style.setProperty('--dir',dir);
+el.scrollTop=0;old.classList.remove('on');old.classList.add('out');
+el.classList.remove('out','on');void el.offsetWidth;el.classList.add('on');
+old._t=setTimeout(()=>{old.classList.remove('out');old.style.removeProperty('--ox')},320)}
 function show(n){if(!tabs.includes(n))n='metronom';const was=curTab===null;swap(n);document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===n));movePill(n,was);if(n!=='tuner')stopTuner();if(n==='acara')renderEv();if(n==='scale')renderScale()}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.t});
-addEventListener('hashchange',()=>show(location.hash.slice(1)));addEventListener('resize',()=>movePill(curTab,true));addEventListener('load',()=>movePill(curTab,true));if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>movePill(curTab,true));
+addEventListener('hashchange',()=>{const h=location.hash.slice(1),n=tabs.includes(h)?h:'metronom';if(n!==curTab)show(n)});
+/* Geser jari: kartu mengikuti jari, lalu lanjut atau memantul balik */
+(function(){const deck=$('deck'),skip='input,textarea,select,.fbscroll,[data-noswipe]';let x0=0,y0=0,t0=0,dx=0,mode=-1,cur=null;
+deck.addEventListener('touchstart',e=>{if(e.touches.length!==1||e.target.closest(skip)){mode=-1;return}const t=e.touches[0];x0=t.clientX;y0=t.clientY;t0=performance.now();dx=0;mode=0;cur=$(curTab)},{passive:true});
+deck.addEventListener('touchmove',e=>{if(mode<0||!cur)return;const t=e.touches[0],mx=t.clientX-x0,my=t.clientY-y0;
+if(mode===0){if(Math.abs(mx)>12&&Math.abs(mx)>Math.abs(my)*1.4){mode=1;cur.style.transition='none';cur.style.animation='none'}else if(Math.abs(my)>12){mode=-1;return}else return}
+dx=mx;const i=tabs.indexOf(curTab),edge=(dx>0&&i===0)||(dx<0&&i===tabs.length-1),x=edge?dx*.22:dx*.85;
+cur.style.transform='translate3d('+x.toFixed(1)+'px,0,0) scale('+(1-Math.min(Math.abs(x)/1400,.04)).toFixed(3)+')';cur.style.opacity=(1-Math.min(Math.abs(x)/460,.55)).toFixed(2)},{passive:true});
+function end(){if(mode!==1||!cur){mode=-1;return}const el=cur,i=tabs.indexOf(curTab),v=dx/Math.max(performance.now()-t0,1),edge=(dx>0&&i===0)||(dx<0&&i===tabs.length-1),go=!edge&&(Math.abs(dx)>deck.clientWidth*.2||Math.abs(v)>.5);
+if(go){const nx=dx<0?i+1:i-1,ox=dx*.85,oo=parseFloat(el.style.opacity)||1;el.style.setProperty('--ox',ox+'px');el.style.setProperty('--oo',oo);el.style.transition='';el.style.transform='';el.style.opacity='';el.style.animation='';show(tabs[nx]);location.hash=tabs[nx]}
+else{el.style.animation='';el.style.transition='transform .5s cubic-bezier(.34,1.45,.5,1),opacity .3s';el.style.transform='';el.style.opacity='';setTimeout(()=>{el.style.transition=''},520)}
+mode=-1;cur=null;dx=0}
+deck.addEventListener('touchend',end,{passive:true});deck.addEventListener('touchcancel',end,{passive:true});
+addEventListener('keydown',e=>{if(e.altKey||e.ctrlKey||e.metaKey||e.shiftKey)return;const t=e.target;if(t.closest&&t.closest('input,textarea,select,[contenteditable]'))return;if(!$('auth').hidden||!$('pv').hidden)return;const i=tabs.indexOf(curTab);if(e.key==='ArrowRight'&&i<tabs.length-1)location.hash=tabs[i+1];else if(e.key==='ArrowLeft'&&i>0)location.hash=tabs[i-1]})})();addEventListener('resize',()=>movePill(curTab,true));addEventListener('load',()=>movePill(curTab,true));if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>movePill(curTab,true));
 
 /* Metronom */
 let bpm=100,beats=4,run=false,beat=0,next=0,iv=null,flip=false;
@@ -616,7 +658,7 @@ $('evaddb').onclick=()=>{const v=+$('evadd').value;if(v){cur().s.push(v);renderE
 /* Auto scroll & Presenter */
 function setAS(on){asOn=on;asRun++;document.querySelectorAll('[data-a="as"]').forEach(b=>{b.setAttribute('aria-pressed',on);b.textContent=on?'Stop scroll':'Auto scroll'});if(on){asLast=performance.now();asAcc=0;const g=asRun;requestAnimationFrame(t=>asLoop(t,g))}}
 function asLoop(t,g){if(!asOn||g!==asRun)return;asAcc+=asSpeed*8*(t-asLast)/1000;asLast=t;const px=Math.floor(asAcc);
-if(px>0){asAcc-=px;if(pvId){const el=$('pv');el.scrollTop+=px;if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)return setAS(false)}else{window.scrollBy(0,px);if(innerHeight+scrollY>=document.documentElement.scrollHeight-2)return setAS(false)}}
+if(px>0){asAcc-=px;if(pvId){const el=$('pv');el.scrollTop+=px;if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)return setAS(false)}else{const el=$(curTab);el.scrollTop+=px;if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)return setAS(false)}}
 requestAnimationFrame(t2=>asLoop(t2,g))}
 document.addEventListener('input',e=>{if(e.target.classList.contains('asr')){asSpeed=+e.target.value;document.querySelectorAll('.asr').forEach(x=>x.value=asSpeed)}});
 function renderPv(){const s=songs.find(x=>x.id===pvId);if(!s){closePv();return}
@@ -786,11 +828,11 @@ cx.globalAlpha=.25+.75*Math.pow((Math.sin(p.ph*2.2)+1)/2,2);const R=p.r*2;cx.dra
 cx.globalAlpha=1}
 requestAnimationFrame(loop);
 window.lifeTab=i=>{ttx=(i-3.5)*-14;if(rmq.matches||dead)bgw.style.transform='translate3d('+ttx+'px,0,0)'};
-window.lifePulse=acc=>{if(rmq.matches)return;beat.animate([{opacity:acc?.95:.5},{opacity:0}],{duration:acc?700:480,easing:'cubic-bezier(.2,.7,.3,1)'})};
+window.lifePulse=acc=>{if(rmq.matches)return;beat.animate([{opacity:acc?.95:.5},{opacity:0}],{duration:acc?700:480,easing:'cubic-bezier(.2,.7,.3,1)'});const bv=document.getElementById('bpmv');if(bv)bv.animate([{transform:'scale('+(acc?1.09:1.045)+')'},{transform:'scale(1)'}],{duration:acc?300:200,easing:'cubic-bezier(.2,.7,.3,1)'})};
 // waktu: sapaan + warna suasana
 const h=new Date().getHours(),part=h<4?'malam':h<11?'pagi':h<15?'siang':h<18?'sore':'malam',em={pagi:'🌅',siang:'☀️',sore:'🌇',malam:'🌙'}[part];
 const sh=h>=19||h<4?[.46,.72]:h<11?[.18,.42]:h<18?[.26,.5]:[.34,.6];life.style.setProperty('--s1',sh[0]);life.style.setProperty('--s2',sh[1]);
-const L=['Siap berlatih hari ini?','Satu nada, satu langkah lebih dekat.','Pelan-pelan, rasakan temponya.','Dengarkan ombaknya, ikuti iramanya.','Yang penting konsisten, bukan cepat.','Mainkan sesuatu yang kamu suka.'],g=$('greet').firstChild;let n=Math.floor(Math.random()*L.length);
+const L=['Siap berlatih hari ini?','Satu nada, satu langkah.','Rasakan temponya pelan-pelan.','Ikuti irama ombaknya.','Konsisten lebih penting.','Mainkan lagu favoritmu.'],g=$('greet').firstChild;let n=Math.floor(Math.random()*L.length);
 function say(){g.classList.add('o');setTimeout(()=>{g.innerHTML='<b>Selamat '+part+'</b> '+em+' · '+L[n++%L.length];g.classList.remove('o')},rmq.matches?0:900)}
 say();setInterval(say,8000);
 // ripple
