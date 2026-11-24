@@ -198,8 +198,8 @@ pre.chart .gp{height:.75em;break-inside:avoid}
 #life .shade{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 40%,transparent 40%,rgba(0,0,0,.4) 100%),linear-gradient(rgba(10,12,20,var(--s1)),rgba(10,12,20,var(--s2)))}
 #life .beat{position:absolute;inset:0;opacity:0;background:radial-gradient(65% 55% at 50% 78%,rgba(255,190,120,.5),transparent 70%);pointer-events:none;will-change:opacity}
 #life .spot{position:absolute;left:0;top:0;width:320px;height:320px;margin:-160px 0 0 -160px;background:radial-gradient(circle,rgba(255,214,170,.18),transparent 70%);opacity:0;transition:opacity .5s;pointer-events:none;will-change:transform,opacity}
-#fx{position:absolute;inset:0;width:100%;height:100%}
-html.lite #fx,html.lite #life .haze,html.lite #life .spot{display:none}
+#lifefx{position:absolute;inset:0;width:100%;height:100%}
+html.lite #lifefx,html.lite #life .haze,html.lite #life .spot{display:none}
 html.lite #life .bg{animation:none}
 /* tanpa backdrop-filter & tanpa blur: ini yang bikin patah-patah */
 section{will-change:auto;background:color-mix(in srgb,var(--panel) 88%,transparent);-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid color-mix(in srgb,#fff 12%,transparent)}
@@ -219,7 +219,7 @@ h1::before{animation:breathe 3.4s ease-in-out infinite}
 .rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.38);transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
 @keyframes rip{to{transform:scale(1);opacity:0}}
 @media (hover:hover){.btn:not(.t3d):not(:active):hover{transform:translateY(-2px)}.song{transition:transform .25s cubic-bezier(.22,1,.36,1)}.song:hover{transform:translateX(5px)}}
-@media (prefers-reduced-motion:reduce){#life .bg,#life .haze,h1::before{animation:none!important}#fx,#life .spot{display:none}}
+@media (prefers-reduced-motion:reduce){#life .bg,#life .haze,h1::before{animation:none!important}#lifefx,#life .spot{display:none}}
 
 #aerr{min-height:0}
 #aerr:empty{display:none}
@@ -251,10 +251,15 @@ nav button{flex:1 0 auto;min-width:max-content;text-overflow:clip}
 .acct{position:absolute;top:14px;right:16px;left:auto;margin:0;max-width:min(58%,calc(100% - 190px));z-index:6}
 .acct #who{color:rgba(255,255,255,.9);text-shadow:0 1px 8px rgba(0,0,0,.55)}
 .acct #sst{color:rgba(255,255,255,.75)}
+
+.bak{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.bak small{color:var(--mute);line-height:1.45}
+.bak .row{justify-content:flex-start;margin:6px 0 2px}
+#bmsg{min-height:1.2em;color:var(--ok)}#bmsg.e{color:var(--brass)}
 </style>
 </head>
 <body>
-<div id="life" aria-hidden="true"><div class="bgw"><div class="bg"></div></div><div class="haze"></div><canvas id="fx"></canvas><div class="shade"></div><div class="beat"></div><div class="spot"></div></div>
+<div id="life" aria-hidden="true"><div class="bgw"><div class="bg"></div></div><div class="haze"></div><canvas id="lifefx"></canvas><div class="shade"></div><div class="beat"></div><div class="spot"></div></div>
 <main>
 <h1>Chordity</h1>
 <div id="greet" aria-live="off"><span></span></div>
@@ -341,6 +346,13 @@ nav button{flex:1 0 auto;min-width:max-content;text-overflow:clip}
 <textarea class="w" id="fx" placeholder="Chord dan lirik (opsional). Taruh baris chord di atas lirik, mis. G  D  Em  C" aria-label="Chord dan lirik"></textarea>
 <button class="btn main" id="fa" type="button">Tambah lagu</button>
 </form>
+<div class="bak" id="bak">
+<b>Cadangan lagu</b>
+<small>Simpan semua lagu dan acara ke satu file, atau pulihkan dari file itu. Memulihkan hanya menambah dan melengkapi, tidak pernah menghapus lagu yang ada.</small>
+<div class="row"><button class="btn sm" id="bdl" type="button">Unduh cadangan</button><button class="btn sm" id="bup" type="button">Pulihkan dari file</button></div>
+<input type="file" id="bfile" accept="application/json,.json" hidden>
+<small id="bmsg" role="status"></small>
+</div>
 </section>
 
 <section id="chord">
@@ -559,9 +571,10 @@ if(b.dataset.a==='sv'){s.x=$('ex').value;editSong=0;renderSongs();return}
 if(b.dataset.a==='perm'){s.x=(s.x||'').split('\n').map(l=>tline(l,trans)).join('\n');if(/^[A-G][#b]?m?$/.test(s.k||''))s.k=tline(s.k,trans);trans=0;renderSongs();return}
 if(b.dataset.a==='bpm'){setBpm(s.b);location.hash='metronom';return}
 renderSongs()};
-$('fa').onclick=()=>{const t=$('ft').value.trim();if(!t){$('ft').focus();return}
-songs.unshift({id:Date.now(),t,c:$('fc').value.trim(),k:$('fk').value.trim(),b:+$('fb').value||0,x:$('fx').value,s:'belajar'});
-['ft','fc','fk','fb','fx'].forEach(i=>$(i).value='');renderSongs();location.hash='perpustakaan'};
+const F=id=>document.querySelector('#f #'+id);
+$('fa').onclick=()=>{const t=F('ft').value.trim();if(!t){F('ft').focus();return}
+songs.unshift({id:Date.now(),t,c:F('fc').value.trim(),k:F('fk').value.trim(),b:+F('fb').value||0,x:F('fx').value,s:'belajar'});
+['ft','fc','fk','fb','fx'].forEach(i=>F(i).value='');renderSongs();location.hash='perpustakaan'};
 renderSongs();
 
 /* Chord */
@@ -793,6 +806,21 @@ else if(!navigator.onLine&&store.get('rl-owner','')){$('auth').hidden=true;docum
 else showAuth('login')}
 addEventListener('online',()=>{if(sb)user?reconcile():boot()});
 addEventListener('offline',()=>{if(user)setSt('Offline')});
+
+/* Cadangan: unduh & pulihkan (gabung, tidak menghapus) */
+(function(){const msg=(t,e)=>{const m=$('bmsg');m.textContent=t;m.classList.toggle('e',!!e)};
+$('bdl').onclick=()=>{const d={app:'chordity',v:1,at:new Date().toISOString(),songs,events:evs,curEv},a=document.createElement('a');
+a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,1)],{type:'application/json'}));a.download='chordity-cadangan-'+new Date().toISOString().slice(0,10)+'.json';
+document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},800);msg('Cadangan diunduh: '+songs.length+' lagu, '+evs.length+' acara.')};
+$('bup').onclick=()=>$('bfile').click();
+$('bfile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+try{const d=JSON.parse(await f.text());if(!d||!Array.isArray(d.songs))throw 0;
+let add=0,upd=0;const rich=x=>(x&&x.x?String(x.x).length:0);
+d.songs.forEach(n=>{if(!n||typeof n.t!=='string'||n.id==null)return;const o=songs.find(x=>x.id===n.id);
+if(!o){songs.push(n);add++}else if(rich(n)>rich(o)){Object.assign(o,n);upd++}});
+let ae=0;if(Array.isArray(d.events))d.events.forEach(n=>{if(n&&n.id!=null&&!evs.some(x=>x.id===n.id)){evs.push(n);ae++}});
+renderSongs();renderEv();msg('Dipulihkan: '+add+' lagu ditambah, '+upd+' dilengkapi, '+ae+' acara ditambah.')}
+catch(err){msg('File tidak dikenali. Pakai file cadangan dari Chordity.',1)}}})();
 document.addEventListener('visibilitychange',()=>{if(!user)return;if(document.visibilityState==='hidden'){if(dirty)pushNow()}else if(!dirty&&!editSong&&!pvId)reconcile()});
 
 show(location.hash.slice(1));
@@ -800,7 +828,7 @@ boot();
 </script>
 <script>
 (function(){
-const $=id=>document.getElementById(id),life=$('life'),cv=$('fx'),cx=cv.getContext('2d'),bgw=life.querySelector('.bgw'),spot=life.querySelector('.spot'),beat=life.querySelector('.beat'),rmq=matchMedia('(prefers-reduced-motion:reduce)'),root=document.documentElement;
+const $=id=>document.getElementById(id),life=$('life'),cv=$('lifefx'),cx=cv.getContext('2d'),bgw=life.querySelector('.bgw'),spot=life.querySelector('.spot'),beat=life.querySelector('.beat'),rmq=matchMedia('(prefers-reduced-motion:reduce)'),root=document.documentElement;
 let W=0,H=0,P=[],mx=.5,my=.5,sx=.5,sy=.5,tx=0,ttx=0,px=-999,py=-999,last=0,ema=16.7,fr=0,dead=false;
 // glow digambar sekali ke sprite, lalu cuma di-copy tiap frame (jauh lebih murah)
 function sprite(c){const s=document.createElement('canvas'),n=64,g=s.getContext('2d');s.width=s.height=n;const r=g.createRadialGradient(n/2,n/2,0,n/2,n/2,n/2);r.addColorStop(0,'rgba('+c+',.95)');r.addColorStop(.25,'rgba('+c+',.3)');r.addColorStop(1,'rgba('+c+',0)');g.fillStyle=r;g.fillRect(0,0,n,n);return s}
