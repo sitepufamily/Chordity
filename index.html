@@ -91,11 +91,8 @@ nav::-webkit-scrollbar{display:none}
 nav button{border-radius:999px;padding:9px 15px;font-weight:500;transition:background .2s,color .2s}
 nav button[aria-selected="true"]{background:var(--grad);color:var(--on);font-weight:700;box-shadow:0 4px 14px color-mix(in srgb,var(--brass) 40%,transparent)}
 section{border-radius:26px;padding:24px;box-shadow:var(--shadow)}
-section{will-change:transform,opacity}
 section.on{animation:slin .46s cubic-bezier(.22,1,.36,1) both}
 section.out{display:block;animation:slout .16s cubic-bezier(.4,0,1,1) both;pointer-events:none}
-@keyframes slin{from{opacity:0;transform:translateX(calc(var(--dir,1)*46px)) scale(.97);filter:blur(7px)}to{opacity:1;transform:none;filter:blur(0)}}
-@keyframes slout{to{opacity:0;transform:translateX(calc(var(--dir,1)*-34px)) scale(.97);filter:blur(5px)}}
 section.on>*{animation:kid .5s cubic-bezier(.22,1,.36,1) both}
 section.on>*:nth-child(1){animation-delay:.04s}section.on>*:nth-child(2){animation-delay:.08s}section.on>*:nth-child(3){animation-delay:.12s}section.on>*:nth-child(4){animation-delay:.16s}section.on>*:nth-child(5){animation-delay:.2s}section.on>*:nth-child(n+6){animation-delay:.24s}
 @keyframes kid{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
@@ -193,32 +190,38 @@ pre.chart .gp{height:.75em;break-inside:avoid}
 .acct #sst{white-space:nowrap}
 @media print{#acct,#auth{display:none!important}}
 
-/* ===== Hidup ===== */
-#life{position:fixed;inset:0;z-index:-1;overflow:hidden;background:#14110e;--s1:.30;--s2:.55}
-#life .bgw{position:absolute;inset:-9%;transform:translate3d(calc(var(--px,0)*-30px + var(--tx,0)*1px),calc(var(--py,0)*-18px),0);will-change:transform}
-#life .bg{position:absolute;inset:0;background:url(bg.jpg) 70% center/cover no-repeat;animation:kb 48s ease-in-out infinite alternate;will-change:transform}
-@keyframes kb{from{transform:scale(1) translate3d(0,0,0)}to{transform:scale(1.1) translate3d(-1.6%,1.2%,0)}}
-#life .haze{position:absolute;inset:-10%;mix-blend-mode:screen;background:radial-gradient(42% 30% at 22% 32%,rgba(255,196,140,.17),transparent 70%),radial-gradient(36% 26% at 78% 20%,rgba(255,150,110,.13),transparent 70%),radial-gradient(50% 24% at 55% 62%,rgba(255,220,170,.09),transparent 70%);animation:hz 26s ease-in-out infinite alternate}
-@keyframes hz{from{transform:translate3d(-3%,0,0) scale(1)}to{transform:translate3d(4%,-2%,0) scale(1.12)}}
-#life .shade{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 40%,transparent 40%,rgba(0,0,0,.4) 100%),linear-gradient(rgba(10,12,20,var(--s1)),rgba(10,12,20,var(--s2)));transition:background 2s}
-#life .beat{position:absolute;inset:0;opacity:0;background:radial-gradient(65% 55% at 50% 78%,rgba(255,190,120,.55),transparent 70%);mix-blend-mode:screen;pointer-events:none}
-#life .spot{position:absolute;inset:0;background:radial-gradient(260px circle at var(--mx,50%) var(--my,60%),rgba(255,214,170,.16),transparent 70%);mix-blend-mode:screen;opacity:var(--so,0);transition:opacity .6s}
+/* ===== Hidup (ringan: hanya transform & opacity) ===== */
+#life{position:fixed;inset:0;z-index:-1;overflow:hidden;background:#14110e;contain:paint;--s1:.30;--s2:.55}
+#life .bgw{position:absolute;inset:-8%;will-change:transform}
+#life .bg{position:absolute;inset:0;background:url(bg.jpg) 70% center/cover no-repeat;animation:kb 60s ease-in-out infinite alternate;will-change:transform}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.08) translate3d(-1.2%,.8%,0)}}
+#life .haze{position:absolute;inset:-10%;background:radial-gradient(42% 30% at 22% 32%,rgba(255,196,140,.14),transparent 70%),radial-gradient(36% 26% at 78% 20%,rgba(255,150,110,.11),transparent 70%);animation:hz 32s ease-in-out infinite alternate;will-change:transform}
+@keyframes hz{from{transform:translate3d(-3%,0,0)}to{transform:translate3d(4%,-2%,0)}}
+#life .shade{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 40%,transparent 40%,rgba(0,0,0,.4) 100%),linear-gradient(rgba(10,12,20,var(--s1)),rgba(10,12,20,var(--s2)))}
+#life .beat{position:absolute;inset:0;opacity:0;background:radial-gradient(65% 55% at 50% 78%,rgba(255,190,120,.5),transparent 70%);pointer-events:none;will-change:opacity}
+#life .spot{position:absolute;left:0;top:0;width:320px;height:320px;margin:-160px 0 0 -160px;background:radial-gradient(circle,rgba(255,214,170,.18),transparent 70%);opacity:0;transition:opacity .5s;pointer-events:none;will-change:transform,opacity}
 #fx{position:absolute;inset:0;width:100%;height:100%}
-section{background:color-mix(in srgb,var(--panel) 80%,transparent);-webkit-backdrop-filter:blur(20px) saturate(1.25);backdrop-filter:blur(20px) saturate(1.25);border:1px solid color-mix(in srgb,#fff 14%,transparent)}
+html.lite #fx,html.lite #life .haze,html.lite #life .spot{display:none}
+html.lite #life .bg{animation:none}
+/* tanpa backdrop-filter & tanpa blur: ini yang bikin patah-patah */
+section{will-change:auto;background:color-mix(in srgb,var(--panel) 88%,transparent);-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid color-mix(in srgb,#fff 12%,transparent)}
+nav{-webkit-backdrop-filter:none;backdrop-filter:none;background:color-mix(in srgb,var(--panel) 92%,transparent)}
+@keyframes slin{from{opacity:0;transform:translate3d(calc(var(--dir,1)*40px),0,0) scale(.98)}to{opacity:1;transform:none}}
+@keyframes slout{to{opacity:0;transform:translate3d(calc(var(--dir,1)*-28px),0,0) scale(.98)}}
+section.out{animation-duration:.14s}
 #greet{margin:-8px 0 16px;color:rgba(255,255,255,.88);text-shadow:0 1px 10px rgba(0,0,0,.55);font-size:.98rem;min-height:1.5em}
 #greet b{font-weight:700;color:#fff}
 #greet span{display:inline-block;transition:opacity .9s,transform .9s}
 #greet span.o{opacity:0;transform:translateY(6px)}
 h1::before{animation:breathe 3.4s ease-in-out infinite}
-@keyframes breathe{50%{transform:scale(1.35);filter:brightness(1.3) drop-shadow(0 0 8px currentColor)}}
-.btn.main:not(:active){animation:glow 3.2s ease-in-out infinite}
-#pill{animation:glow 3.6s ease-in-out infinite}
-@keyframes glow{50%{filter:brightness(1.14) saturate(1.15)}}
+@keyframes breathe{50%{transform:scale(1.3)}}
+.btn.main:not(:active){animation:none}
+#pill{animation:none}
 .btn,.key,nav button,.st{position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent}
-.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.38);transform:scale(0);animation:rip .65s ease-out forwards;pointer-events:none}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.38);transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
 @keyframes rip{to{transform:scale(1);opacity:0}}
-@media (hover:hover){.btn:not(.t3d):not(:active):hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.22)}.song{transition:transform .25s cubic-bezier(.22,1,.36,1),background .25s}.song:hover{transform:translateX(5px)}}
-@media (prefers-reduced-motion:reduce){#life .bg,#life .haze,h1::before,.btn.main,#pill{animation:none!important}#fx,#life .spot{display:none}}
+@media (hover:hover){.btn:not(.t3d):not(:active):hover{transform:translateY(-2px)}.song{transition:transform .25s cubic-bezier(.22,1,.36,1)}.song:hover{transform:translateX(5px)}}
+@media (prefers-reduced-motion:reduce){#life .bg,#life .haze,h1::before{animation:none!important}#fx,#life .spot{display:none}}
 </style>
 </head>
 <body>
@@ -747,34 +750,40 @@ boot();
 </script>
 <script>
 (function(){
-const $=id=>document.getElementById(id),life=$('life'),cv=$('fx'),cx=cv.getContext('2d'),rmq=matchMedia('(prefers-reduced-motion:reduce)');
-let W=0,H=0,P=[],mx=.5,my=.5,sx=.5,sy=.5,tx=0,ttx=0,mpx=-999,mpy=-999;
-function mk(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.9+.8,vx:(Math.random()-.5)*.14,vy:-Math.random()*.2-.03,ph:Math.random()*6.28,sp:Math.random()*.02+.01,c:Math.random()<.18?'190,220,255':'255,206,140'}}
-function size(){const d=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*d;cv.height=H*d;cx.setTransform(d,0,0,d,0,0);P=Array.from({length:Math.round(Math.min(48,W*H/24000))},mk)}
+const $=id=>document.getElementById(id),life=$('life'),cv=$('fx'),cx=cv.getContext('2d'),bgw=life.querySelector('.bgw'),spot=life.querySelector('.spot'),beat=life.querySelector('.beat'),rmq=matchMedia('(prefers-reduced-motion:reduce)'),root=document.documentElement;
+let W=0,H=0,P=[],mx=.5,my=.5,sx=.5,sy=.5,tx=0,ttx=0,px=-999,py=-999,last=0,ema=16.7,fr=0,dead=false;
+// glow digambar sekali ke sprite, lalu cuma di-copy tiap frame (jauh lebih murah)
+function sprite(c){const s=document.createElement('canvas'),n=64,g=s.getContext('2d');s.width=s.height=n;const r=g.createRadialGradient(n/2,n/2,0,n/2,n/2,n/2);r.addColorStop(0,'rgba('+c+',.95)');r.addColorStop(.25,'rgba('+c+',.3)');r.addColorStop(1,'rgba('+c+',0)');g.fillStyle=r;g.fillRect(0,0,n,n);return s}
+const SP=[sprite('255,206,140'),sprite('190,220,255')];
+function mk(){return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*10+7,vx:(Math.random()-.5)*.1,vy:-Math.random()*.16-.03,ph:Math.random()*6.28,sp:Math.random()*.02+.01,c:Math.random()<.18?1:0}}
+function size(){W=innerWidth;H=innerHeight;cv.width=W;cv.height=H;P=Array.from({length:Math.round(Math.min(24,W*H/42000))},mk)}
 size();addEventListener('resize',size);
-function ptr(e){const t=e.touches?e.touches[0]:e;mx=t.clientX/W;my=t.clientY/H;mpx=t.clientX;mpy=t.clientY;life.style.setProperty('--mx',t.clientX+'px');life.style.setProperty('--my',t.clientY+'px');life.style.setProperty('--so',1)}
+function ptr(e){const t=e.touches?e.touches[0]:e;mx=t.clientX/W;my=t.clientY/H;px=t.clientX;py=t.clientY;spot.style.opacity=1}
 addEventListener('pointermove',ptr,{passive:true});addEventListener('touchmove',ptr,{passive:true});
-addEventListener('pointerleave',()=>{life.style.setProperty('--so',0);mpx=mpy=-999});
-addEventListener('touchend',()=>{life.style.setProperty('--so',0);mpx=mpy=-999});
-let tt=0;
-function loop(){requestAnimationFrame(loop);if(document.hidden||rmq.matches)return;tt+=1;
-sx+=(mx-sx)*.04;sy+=(my-sy)*.04;tx+=(ttx-tx)*.06;
-life.style.setProperty('--px',(sx-.5).toFixed(3));life.style.setProperty('--py',(sy-.5).toFixed(3));life.style.setProperty('--tx',tx.toFixed(1));
-cx.clearRect(0,0,W,H);cx.globalCompositeOperation='lighter';
-for(const p of P){p.ph+=p.sp;p.x+=p.vx+Math.sin(p.ph*1.3)*.22;p.y+=p.vy+Math.cos(p.ph)*.12;
-const dx=mpx-p.x,dy=mpy-p.y,d2=dx*dx+dy*dy;if(d2<28000){p.x+=dx*.0016;p.y+=dy*.0016}
-if(p.y<-12)p.y=H+12;if(p.x<-12)p.x=W+12;if(p.x>W+12)p.x=-12;
-const a=.25+.75*Math.pow((Math.sin(p.ph*2.2)+1)/2,2),R=p.r*7;
-const g=cx.createRadialGradient(p.x,p.y,0,p.x,p.y,R);g.addColorStop(0,'rgba('+p.c+','+(a*.9).toFixed(2)+')');g.addColorStop(.25,'rgba('+p.c+','+(a*.28).toFixed(2)+')');g.addColorStop(1,'rgba('+p.c+',0)');
-cx.fillStyle=g;cx.beginPath();cx.arc(p.x,p.y,R,0,6.283);cx.fill()}}
-loop();
-window.lifeTab=i=>{ttx=(i-3.5)*-16;if(rmq.matches)life.style.setProperty('--tx',ttx)};
-window.lifePulse=acc=>{if(rmq.matches)return;const b=life.querySelector('.beat');b.animate([{opacity:acc?.95:.5},{opacity:0}],{duration:acc?700:480,easing:'cubic-bezier(.2,.7,.3,1)'});life.querySelector('.bg').animate([{filter:'brightness('+(acc?1.22:1.1)+')'},{filter:'brightness(1)'}],{duration:acc?700:480,easing:'ease-out'})};
+const off=()=>{spot.style.opacity=0;px=py=-999};addEventListener('pointerleave',off);addEventListener('touchend',off);
+function lite(){dead=true;root.classList.add('lite');cx.clearRect(0,0,W,H)}
+function loop(t){if(dead)return;requestAnimationFrame(loop);if(document.hidden||rmq.matches){last=0;return}
+const dt=last?Math.min(t-last,100):16.7;last=t;const k=dt/16.7;
+// jaga performa: kalau perangkat tidak sanggup, efek berat dimatikan otomatis
+if(dt<100){ema=ema*.93+dt*.07;fr++;if(fr>100&&ema>27){lite();return}}
+// parallax: satu transform langsung, tanpa CSS variable
+const dx=mx-sx,dy=my-sy,dtx=ttx-tx;
+if(Math.abs(dx)>.0004||Math.abs(dy)>.0004||Math.abs(dtx)>.05){sx+=dx*.05*k;sy+=dy*.05*k;tx+=dtx*.07*k;bgw.style.transform='translate3d('+(-(sx-.5)*28+tx).toFixed(1)+'px,'+(-(sy-.5)*16).toFixed(1)+'px,0)'}
+if(px>-900)spot.style.transform='translate3d('+px.toFixed(0)+'px,'+py.toFixed(0)+'px,0)';
+cx.clearRect(0,0,W,H);
+for(const p of P){p.ph+=p.sp*k;p.x+=(p.vx+Math.sin(p.ph*1.3)*.2)*k;p.y+=(p.vy+Math.cos(p.ph)*.1)*k;
+const ex=px-p.x,ey=py-p.y;if(ex*ex+ey*ey<28000){p.x+=ex*.0016*k;p.y+=ey*.0016*k}
+if(p.y<-20)p.y=H+20;if(p.x<-20)p.x=W+20;if(p.x>W+20)p.x=-20;
+cx.globalAlpha=.25+.75*Math.pow((Math.sin(p.ph*2.2)+1)/2,2);const R=p.r*2;cx.drawImage(SP[p.c],p.x-R/2,p.y-R/2,R,R)}
+cx.globalAlpha=1}
+requestAnimationFrame(loop);
+window.lifeTab=i=>{ttx=(i-3.5)*-14;if(rmq.matches||dead)bgw.style.transform='translate3d('+ttx+'px,0,0)'};
+window.lifePulse=acc=>{if(rmq.matches)return;beat.animate([{opacity:acc?.95:.5},{opacity:0}],{duration:acc?700:480,easing:'cubic-bezier(.2,.7,.3,1)'})};
 // waktu: sapaan + warna suasana
 const h=new Date().getHours(),part=h<4?'malam':h<11?'pagi':h<15?'siang':h<18?'sore':'malam',em={pagi:'🌅',siang:'☀️',sore:'🌇',malam:'🌙'}[part];
 const sh=h>=19||h<4?[.46,.72]:h<11?[.18,.42]:h<18?[.26,.5]:[.34,.6];life.style.setProperty('--s1',sh[0]);life.style.setProperty('--s2',sh[1]);
-const L=['Siap berlatih hari ini?','Satu nada, satu langkah lebih dekat.','Pelan-pelan, rasakan temponya.','Dengarkan ombaknya, ikuti iramanya.','Yang penting konsisten, bukan cepat.','Mainkan sesuatu yang kamu suka.'],g=$('greet').firstChild;let k=Math.floor(Math.random()*L.length);
-function say(){g.classList.add('o');setTimeout(()=>{g.innerHTML='<b>Selamat '+part+'</b> '+em+' · '+L[k++%L.length];g.classList.remove('o')},rmq.matches?0:900)}
+const L=['Siap berlatih hari ini?','Satu nada, satu langkah lebih dekat.','Pelan-pelan, rasakan temponya.','Dengarkan ombaknya, ikuti iramanya.','Yang penting konsisten, bukan cepat.','Mainkan sesuatu yang kamu suka.'],g=$('greet').firstChild;let n=Math.floor(Math.random()*L.length);
+function say(){g.classList.add('o');setTimeout(()=>{g.innerHTML='<b>Selamat '+part+'</b> '+em+' · '+L[n++%L.length];g.classList.remove('o')},rmq.matches?0:900)}
 say();setInterval(say,8000);
 // ripple
 document.addEventListener('pointerdown',e=>{const t=e.target.closest&&e.target.closest('.btn,.key,nav button,.st');if(!t||rmq.matches)return;const r=t.getBoundingClientRect(),z=Math.max(r.width,r.height)*2.2,i=document.createElement('i');i.className='rip';i.style.cssText='width:'+z+'px;height:'+z+'px;left:'+(e.clientX-r.left-z/2)+'px;top:'+(e.clientY-r.top-z/2)+'px';t.appendChild(i);setTimeout(()=>i.remove(),700)},{passive:true});
