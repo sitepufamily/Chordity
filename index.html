@@ -49,12 +49,6 @@ label{color:var(--mute);font-size:.9rem}
 .dots i.hit{background:var(--brass)}
 .dots i.acc.hit{background:var(--ok)}
 /* tuner */
-.meter{position:relative;height:44px;margin:16px 0}
-.meter::before{content:"";position:absolute;left:0;right:0;top:20px;height:4px;background:var(--line);border-radius:2px}
-.meter::after{content:"";position:absolute;left:50%;top:6px;height:32px;width:2px;background:var(--mute)}
-#needle{position:absolute;top:2px;left:50%;width:10px;height:40px;margin-left:-5px;border-radius:5px;background:var(--brass);transition:left .12s,background .12s}
-#needle.ok{background:var(--ok)}
-.strings button.btn{min-width:48px}
 /* timer */
 .chips{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
 .chips .btn[aria-pressed="true"]{border-color:var(--brass);color:var(--brass);font-weight:700}
@@ -112,9 +106,6 @@ input[type=range]{background:none;border:0;padding:0}
 .dots i.acc.hit{box-shadow:0 0 12px var(--ok)}
 #arm::before{background:var(--grad);border-radius:8px}
 .base{background:var(--panel2)}
-.meter::before{background:var(--panel2)}
-#needle{background:var(--grad);border-radius:6px}
-#needle.ok{background:var(--ok)}
 .song{background:var(--panel2);border:0;border-radius:18px;padding:12px 14px;margin-bottom:8px}
 .chartbox{background:var(--panel2);border:0;border-radius:18px;padding:14px;margin:-2px 0 10px}
 .chartbox textarea,pre.chart{background:var(--panel)}
@@ -125,6 +116,35 @@ pre.chart .u{break-inside:avoid}
 pre.chart .u.h{break-after:avoid}
 pre.chart .gp{height:.75em;break-inside:avoid}
 @media (min-width:980px){main:has(#perpustakaan.on pre.c2){max-width:1040px}}
+/* tuner 3D */
+.tplate{position:relative;margin:6px auto 14px;padding:16px 14px 18px;border-radius:30px;color:#eceff5;background:radial-gradient(120% 90% at 50% 0%,#2b3253 0%,#161b2c 55%,#0c1018 100%);box-shadow:0 34px 50px -22px rgba(0,0,0,.65),0 2px 0 rgba(255,255,255,.14) inset,0 -12px 26px rgba(0,0,0,.5) inset,0 0 0 1px rgba(255,255,255,.07);transform:perspective(900px) rotateX(calc(var(--rx,10)*1deg)) rotateY(calc(var(--ry,0)*1deg));transform-style:preserve-3d;transition:transform .18s ease-out;will-change:transform}
+.tplate::before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(160deg,rgba(255,255,255,.15),transparent 36%);pointer-events:none}
+.tlamps{display:flex;justify-content:space-between;align-items:center;padding:0 4px;transform:translateZ(18px)}
+.lamp{min-width:50px;height:24px;padding:0 8px;border-radius:13px;display:grid;place-items:center;font-size:.85rem;font-weight:700;letter-spacing:.04em;color:#556078;background:linear-gradient(#090c12,#181d2b);box-shadow:inset 0 2px 5px rgba(0,0,0,.75),0 1px 0 rgba(255,255,255,.09);transition:color .15s,background .15s,box-shadow .15s}
+.lamp.f.on{color:#06101f;background:linear-gradient(#b4d3ff,#5b95f0);box-shadow:0 0 16px #5b95f0,inset 0 1px 0 rgba(255,255,255,.65)}
+.lamp.s.on{color:#210d04;background:linear-gradient(#ffc7a8,#ff8a5c);box-shadow:0 0 16px #ff8a5c,inset 0 1px 0 rgba(255,255,255,.65)}
+.lamp.k.on{color:#03150f;background:linear-gradient(#a8ffe4,#38d6a7);box-shadow:0 0 18px #38d6a7,inset 0 1px 0 rgba(255,255,255,.65)}
+.tgauge{display:block;width:100%;height:auto;margin-top:-6px;transform:translateZ(30px)}
+#ttrack{fill:none;stroke:#080b11;stroke-width:14;stroke-linecap:round;filter:drop-shadow(0 1px 0 rgba(255,255,255,.12))}
+.tt{stroke:#667089;stroke-width:2;stroke-linecap:round}.tt.M{stroke:#aab3c8;stroke-width:3}.tt.z{stroke:#38d6a7;stroke-width:4}
+.ttl{fill:#7d869b;font:600 11px system-ui,sans-serif;text-anchor:middle}
+#ttrail{fill:none;stroke-width:10;stroke-linecap:round}
+#ttrail.f{stroke:#6aa8ff;filter:drop-shadow(0 0 7px #6aa8ff)}#ttrail.s{stroke:#ff9460;filter:drop-shadow(0 0 7px #ff9460)}#ttrail.k{stroke:#38d6a7;filter:drop-shadow(0 0 8px #38d6a7)}
+#tneedle{transform-origin:200px 200px;transform:rotate(0deg);filter:drop-shadow(0 6px 4px rgba(0,0,0,.6))}
+#tneedle polygon{fill:url(#tg-n);transition:fill .2s}#tneedle.ok polygon{fill:#7dffd8}
+.tnote{margin-top:-4px;text-align:center;font-weight:700;font-size:5.4rem;line-height:1;letter-spacing:-.03em;color:#f4f6ff;font-variant-numeric:tabular-nums;transform:translateZ(54px);text-shadow:0 1px 0 #b8b2ff,0 2px 0 #a39bff,0 3px 0 #8f85f0,0 4px 0 #7b70dd,0 5px 0 #675cc8,0 6px 0 #5448b0,0 9px 10px rgba(0,0,0,.55),0 16px 30px rgba(0,0,0,.45);transition:color .2s,text-shadow .2s,opacity .3s}
+.tnote small{font-size:.36em;margin-left:3px;opacity:.85}.tnote i{font-style:normal;font-size:.5em;vertical-align:.95em;margin-left:1px}
+.tnote.ok{color:#eafff7;text-shadow:0 1px 0 #9ff5d8,0 2px 0 #7fe8c4,0 3px 0 #5fd9ae,0 4px 0 #46c298,0 5px 0 #33a982,0 6px 0 #258f6c,0 9px 10px rgba(0,0,0,.55),0 0 30px rgba(56,214,167,.65)}
+.tnote.stale{opacity:.45}
+.tfreq{margin-top:10px;text-align:center;color:#8a93a6;font-size:.95rem;transform:translateZ(20px)}
+.tcents{width:max-content;max-width:100%;margin:2px auto 8px;padding:7px 16px;border-radius:999px;background:var(--panel2);color:var(--mute);text-align:center;font-weight:500;transition:background .2s,color .2s}
+.tcents.ok{background:color-mix(in srgb,var(--ok) 22%,var(--panel2));color:var(--ok);font-weight:700}
+.btn.main.t3d{min-width:170px;padding:13px 28px;border:0;border-radius:999px;background:var(--grad);color:var(--on);font-size:1.05rem;font-weight:700;box-shadow:0 6px 0 color-mix(in srgb,var(--brass) 50%,#000),0 16px 24px color-mix(in srgb,var(--brass) 35%,transparent),inset 0 2px 0 rgba(255,255,255,.35);transition:transform .1s,box-shadow .1s}
+.btn.main.t3d:active{transform:translateY(5px);box-shadow:0 1px 0 color-mix(in srgb,var(--brass) 50%,#000),0 4px 8px color-mix(in srgb,var(--brass) 30%,transparent),inset 0 2px 0 rgba(255,255,255,.35)}
+.key{min-width:58px;padding:11px 0;border:0;border-radius:14px;font:inherit;font-weight:700;cursor:pointer;color:var(--ink);background:linear-gradient(180deg,var(--panel2),color-mix(in srgb,var(--panel2) 72%,var(--line)));box-shadow:0 5px 0 var(--line),0 10px 16px rgba(0,0,0,.2);transition:transform .1s,box-shadow .1s,background .15s}
+.key:active{transform:translateY(4px);box-shadow:0 1px 0 var(--line),0 3px 6px rgba(0,0,0,.2)}
+.key.on{background:var(--grad);color:var(--on);box-shadow:0 5px 0 color-mix(in srgb,var(--brass) 55%,#000),0 0 20px color-mix(in srgb,var(--brass) 55%,transparent)}
+@media (prefers-reduced-motion:reduce){.tplate{transition:none}.key,.btn.main.t3d{transition:none}}
 @media (min-width:900px){main:has(#scale.on){max-width:860px}}
 .fbh{display:flex;align-items:baseline;gap:10px;margin:14px 0 4px;flex-wrap:wrap}.fbh span{color:var(--mute);font-size:.85rem}
 .fbscroll{overflow-x:auto;padding-bottom:4px}.fbscroll svg{display:block;min-width:640px;width:100%;height:auto}
@@ -195,14 +215,30 @@ pre.chart .gp{height:.75em;break-inside:avoid}
 </section>
 
 <section id="tuner">
-<div class="big" id="note">–</div>
-<div class="sub" id="freq">Tekan Mulai lalu mainkan satu senar</div>
-<div class="meter"><div id="needle"></div></div>
-<div class="sub" id="cents">Menunggu nada</div>
+<div class="tplate" id="tplate">
+<div class="tlamps"><span class="lamp f" id="lf">♭</span><span class="lamp k" id="lk">PAS</span><span class="lamp s" id="ls">♯</span></div>
+<svg class="tgauge" viewBox="0 0 400 236" role="img" aria-label="Penunjuk akurasi nada">
+<defs>
+<linearGradient id="tg-n" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#9a8fff"/></linearGradient>
+<radialGradient id="tg-h" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset=".45" stop-color="#9aa3b8"/><stop offset="1" stop-color="#2a3042"/></radialGradient>
+</defs>
+<path id="ttrack" d="M70.1 125A150 150 0 0 1 329.9 125"/>
+<g id="tticks"></g>
+<path id="ttrail" d=""/>
+<ellipse cx="200" cy="214" rx="26" ry="6" fill="rgba(0,0,0,.45)"/>
+<g id="tneedle"><polygon points="195,208 205,208 201,66 199,66"/></g>
+<circle cx="200" cy="200" r="17" fill="url(#tg-h)" stroke="rgba(255,255,255,.28)"/>
+<circle cx="200" cy="200" r="6" fill="#9a8fff"/>
+</svg>
+<div class="tnote" id="note">–</div>
+<div class="tfreq" id="freq">Tekan Mulai lalu mainkan satu senar</div>
+</div>
+<div class="tcents" id="cents">Menunggu nada</div>
 <div class="err" id="terr"></div>
-<div class="row"><button class="btn main" id="tgo">Mulai</button></div>
+<div class="row"><button class="btn main t3d" id="tgo">Mulai</button></div>
 <div class="row"><label for="a4">A4 =</label><input id="a4" type="number" min="410" max="470" value="440" style="width:80px"><label>Hz</label></div>
-<div class="sub">Nada acuan gitar (standar)</div>
+<div class="row"><div class="chips" id="tins"></div></div>
+<div class="sub" id="tref"></div>
 <div class="row strings" id="strings"></div>
 </section>
 
@@ -316,17 +352,37 @@ let r1=0,r2=n-1,th=.2;for(let i=0;i<n/2;i++)if(Math.abs(b[i])<th){r1=i;break}for
 b=b.slice(r1,r2);n=b.length;const c=new Float32Array(n);for(let i=0;i<n;i++)for(let j=0;j<n-i;j++)c[i]+=b[j]*b[j+i];
 let d=0;while(d<n-1&&c[d]>c[d+1])d++;let mx=-1,mp=-1;for(let i=d;i<n;i++)if(c[i]>mx){mx=c[i];mp=i}
 if(mp<1||mp>=n-1)return -1;let T=mp;const x1=c[T-1],x2=c[T],x3=c[T+1],a=(x1+x3-2*x2)/2,bb=(x3-x1)/2;if(a)T-=bb/(2*a);return sr/T}
-function tick(){an.getFloatTimeDomainData(buf);const f=pitch(buf,ctx.sampleRate);if(f<50||f>1200)return;
+function tick(){an.getFloatTimeDomainData(buf);const f=pitch(buf,ctx.sampleRate);if(f<28||f>1200)return;
 const a4=+$('a4').value||440,m=69+12*Math.log2(f/a4),r=Math.round(m),c=Math.round((m-r)*100);
-$('note').textContent=NN[((r%12)+12)%12]+(Math.floor(r/12)-1);$('freq').textContent=f.toFixed(1)+' Hz';
-const nd=$('needle');nd.style.left=(50+c)+'%';nd.classList.toggle('ok',Math.abs(c)<=5);
-$('cents').textContent=Math.abs(c)<=5?'Pas':(c<0?'Terlalu rendah ('+c+' sen): kencangkan':'Terlalu tinggi (+'+c+' sen): kendurkan')}
+const nm=NN[((r%12)+12)%12],ok=Math.abs(c)<=5;$('note').innerHTML=nm[0]+(nm[1]?'<i>♯</i>':'')+'<small>'+(Math.floor(r/12)-1)+'</small>';$('note').classList.toggle('ok',ok);$('freq').textContent=f.toFixed(1)+' Hz';
+tC=c;tLast=performance.now();tKick();$('lf').classList.toggle('on',c<-5);$('lk').classList.toggle('on',ok);$('ls').classList.toggle('on',c>5);$('tneedle').classList.toggle('ok',ok);$('ttrail').setAttribute('class',ok?'k':c<0?'f':'s');
+document.querySelectorAll('#strings .key').forEach(k=>k.classList.toggle('on',+k.dataset.m===r));
+$('cents').textContent=Math.abs(c)<=5?'Pas':(c<0?'Terlalu rendah ('+c+' sen): kencangkan':'Terlalu tinggi (+'+c+' sen): kendurkan');$('cents').classList.toggle('ok',ok)}
 async function startTuner(){$('terr').textContent='';try{audio();stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
 const s=ctx.createMediaStreamSource(stream);an=ctx.createAnalyser();an.fftSize=4096;buf=new Float32Array(an.fftSize);s.connect(an);tiv=setInterval(tick,100);$('tgo').textContent='Berhenti'}
 catch(e){$('terr').textContent='Mikrofon tidak bisa diakses. Izinkan akses mikrofon di browser, atau buka halaman ini di tab sendiri.'}}
-function stopTuner(){clearInterval(tiv);tiv=null;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('tgo').textContent='Mulai'}
+function stopTuner(){clearInterval(tiv);tiv=null;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('tgo').textContent='Mulai';tC=0;tKick();['lf','lk','ls'].forEach(i=>$(i).classList.remove('on'));$('tneedle').classList.remove('ok');$('ttrail').setAttribute('class','');$('note').classList.remove('ok');$('cents').classList.remove('ok')}
 $('tgo').onclick=()=>stream?stopTuner():startTuner();
-[['E2',82.41],['A2',110],['D3',146.83],['G3',196],['B3',246.94],['E4',329.63]].forEach(([n,f])=>{const b=document.createElement('button');b.className='btn';b.textContent=n;b.onclick=()=>{audio();beep(ctx.currentTime,f,1.6,.4)};$('strings').appendChild(b)});
+/* gauge 3D + string referensi */
+let tC=0,cC=0,tLast=0,traf=0,tins=store.get('rl-tins','bass');
+const TI={bass:[['E1',41.2],['A1',55],['D2',73.42],['G2',98]],gitar:[['E2',82.41],['A2',110],['D3',146.83],['G3',196],['B3',246.94],['E4',329.63]]};
+if(!TI[tins])tins='bass';
+function tPol(a,r){const t=a*Math.PI/180;return[200+r*Math.sin(t),200-r*Math.cos(t)]}
+function tArc(a0,a1,r){const p=tPol(a0,r),q=tPol(a1,r);return 'M'+p[0].toFixed(1)+' '+p[1].toFixed(1)+'A'+r+' '+r+' 0 0 '+(a1>a0?1:0)+' '+q[0].toFixed(1)+' '+q[1].toFixed(1)}
+(()=>{let h='';for(let c=-50;c<=50;c+=5){const M=c%25===0,len=M?20:c%10===0?14:8,p=tPol(c*1.2,134),q=tPol(c*1.2,134-len);h+='<line class="tt'+(c===0?' z':M?' M':'')+'" x1="'+p[0].toFixed(1)+'" y1="'+p[1].toFixed(1)+'" x2="'+q[0].toFixed(1)+'" y2="'+q[1].toFixed(1)+'"/>'}
+[-50,-25,0,25,50].forEach(c=>{const p=tPol(c*1.2,174);h+='<text class="ttl" x="'+p[0].toFixed(1)+'" y="'+(p[1]+4).toFixed(1)+'">'+(c>0?'+':'')+c+'</text>'});$('tticks').innerHTML=h})();
+function tDraw(c){const a=Math.max(-50,Math.min(50,c))*1.2;$('tneedle').style.transform='rotate('+a.toFixed(2)+'deg)';$('ttrail').setAttribute('d',Math.abs(a)<.5?'':tArc(0,a,150))}
+function tLoop(){const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;cC=rm?tC:cC+(tC-cC)*.2;tDraw(cC);$('note').classList.toggle('stale',!!tLast&&!!stream&&performance.now()-tLast>1800);
+if(stream||Math.abs(tC-cC)>.05)traf=requestAnimationFrame(tLoop);else{traf=0;tDraw(tC);cC=tC}}
+function tKick(){if(!traf)traf=requestAnimationFrame(tLoop)}
+const tp=$('tplate');
+tp.addEventListener('pointermove',e=>{if(matchMedia('(prefers-reduced-motion:reduce)').matches)return;const r=tp.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;tp.style.setProperty('--ry',(x*14).toFixed(1));tp.style.setProperty('--rx',(10-y*14).toFixed(1))});
+tp.addEventListener('pointerleave',()=>{tp.style.removeProperty('--ry');tp.style.removeProperty('--rx')});
+function renderStrings(){$('strings').innerHTML='';TI[tins].forEach(([n,f])=>{const b=document.createElement('button');b.className='key';b.type='button';b.textContent=n;b.dataset.m=Math.round(69+12*Math.log2(f/440));b.onclick=()=>{audio();beep(ctx.currentTime,f,1.6,.4)};$('strings').appendChild(b)});
+$('tref').textContent='Nada acuan '+(tins==='bass'?'bass 4 senar':'gitar 6 senar')+' (standar)';
+$('tins').innerHTML=[['bass','Bass'],['gitar','Gitar']].map(a=>'<button class="btn sm" type="button" data-ti="'+a[0]+'" aria-pressed="'+(tins===a[0])+'">'+a[1]+'</button>').join('')}
+$('tins').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!b.dataset.ti)return;tins=b.dataset.ti;store.set('rl-tins',tins);renderStrings()});
+renderStrings();
 
 /* Timer */
 let mins=15,left=900,tRun=false,end=0,tiv2=null;
