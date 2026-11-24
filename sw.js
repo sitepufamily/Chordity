@@ -1,4 +1,4 @@
-const CACHE = 'chordity-v17';
+const CACHE = 'chordity-v18';
 const ASSETS = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'bg.jpg', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
