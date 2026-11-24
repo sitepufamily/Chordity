@@ -1,5 +1,5 @@
-const CACHE = 'chordity-v7';
-const ASSETS = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
+const CACHE = 'chordity-v8';
+const ASSETS = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'bg.jpg', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
