@@ -137,7 +137,7 @@ $('evadd').innerHTML=rest.length?rest.map(s=>'<option value="'+s.id+'">'+esc(s.t
 $('evsum').textContent=e.s.length+' lagu dalam draf';
 saveEv()}
 $('evlist').onclick=e=>{const b=e.target.closest('button');if(!b)return;const ev=cur(),i=+b.dataset.i,a=b.dataset.a;
-if(a==='ch'){openSong=+b.dataset.id;trans=0;renderSongs();location.hash='perpustakaan';return}
+if(a==='ch'){trans=0;openPv(+b.dataset.id,ev.s.slice());return}
 if(a==='rm')ev.s.splice(i,1);
 if(a==='up'&&i>0)[ev.s[i-1],ev.s[i]]=[ev.s[i],ev.s[i-1]];
 if(a==='dn'&&i<ev.s.length-1)[ev.s[i+1],ev.s[i]]=[ev.s[i],ev.s[i+1]];

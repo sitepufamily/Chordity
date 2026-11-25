@@ -266,3 +266,9 @@ section#acara.two{align-items:start;align-content:start;grid-template-columns:mi
 #acara>.pa{grid-area:a}#acara>.pb{grid-area:b}#acara>.pc{grid-area:c}
 }
 @media (min-width:820px) and (max-height:620px){section{padding:20px clamp(20px,3vw,40px)}.two .big{font-size:4.2rem}}
+
+/* Pop up chord di tab Acara: mengambang di layar lebar, layar penuh di HP (v20) */
+@media (min-width:820px){
+#pv{inset:3vh 4vw;border-radius:26px;border:1px solid var(--line);box-shadow:0 0 0 100vmax rgba(5,7,12,.66),0 30px 80px rgba(0,0,0,.55)}
+#pvbar{padding-top:12px}
+}
