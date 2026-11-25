@@ -75,7 +75,12 @@ const cur=secCur(r),row=tp.map((t,i)=>i).filter(i=>Math.abs(tp[i]-tp[k])<4),end=
 if(row.includes(cur))k=cur;else if(end&&tp[cur]>=ref-4)k=cur;else k=row[0];
 if(k!==cur||!cs[k].classList.contains('on'))secMark(r,k)}
 document.addEventListener('scroll',()=>{if(secRaf)return;secRaf=requestAnimationFrame(()=>{secRaf=0;secScan()})},true);
-function editBox(s){return '<div class="chartbox"><textarea id="ex" aria-label="Edit chord">'+esc(s.x||'')+'</textarea><div class="row" style="justify-content:flex-start;margin:6px 0 0"><button class="btn sm main" data-a="sv" data-id="'+s.id+'">Simpan</button><button class="btn sm" data-a="cx" data-id="'+s.id+'">Batal</button></div></div>'}
+function editBox(s){const id=' data-id="'+s.id+'"',M=['Intro','Verse','Chorus','Bridge','Outro','Interlude'];
+return '<div class="chartbox edit"><div class="edtop"><button class="btn sm" data-a="cx"'+id+'>\u2039 Batal</button>'
++'<div class="ttl"><b>Edit chord</b><small>'+esc(s.t)+'</small></div>'
++'<button class="btn sm main" data-a="sv"'+id+'>Simpan</button></div>'
++'<div class="edtools"><span class="cgl">Sisipkan bagian</span>'+M.map(m=>'<button class="btn sm" data-a="ins" data-m="['+m+']"'+id+'>'+m+'</button>').join('')+'<span class="edhint">Baris chord di atas lirik. Penanda bagian di barisnya sendiri, mis. [Verse 1].</span></div>'
++'<textarea id="ex" wrap="off" spellcheck="false" aria-label="Edit chord">'+esc(s.x||'')+'</textarea></div>'}
 function chartBox(s){if(editSong===s.id)return editBox(s);
 const bk=baseKey(s),cu=(bk+trans+1200)%12,id=' data-id="'+s.id+'"',n=modCount(s),hasSec=secList(s).length>0;flat=FLATK.includes(cu);
 const B=(a,t,x)=>'<button class="btn sm" data-a="'+a+'"'+id+(x||'')+'>'+t+'</button>',
@@ -111,6 +116,7 @@ $('list').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=+
 if(b.dataset.a==='sn'||b.dataset.a==='sj'){secGo(b);return}
 if(modAct(s,b)){renderSongs();return}
 if(b.dataset.a==='mod'){showMod=!showMod;renderSongs();return}
+if(b.dataset.a==='ins'){const t=$('ex');if(t){const a=t.selectionStart,e=t.selectionEnd,nl=a&&t.value[a-1]!=='\n'?'\n':'';t.setRangeText(nl+b.dataset.m+'\n',a,e,'end');t.focus()}return}
 if(b.dataset.a==='cn'){colN=+b.dataset.n||0;store.set('rl-coln',colN);renderSongs();return}
 if(b.dataset.a==='fit'){fitOn=!fitOn;store.set('rl-fit',fitOn);renderSongs();return}
 if(b.dataset.a==='fsc'){const d=document;d.fullscreenElement?d.exitFullscreen():d.documentElement.requestFullscreen().catch(()=>{});return}
