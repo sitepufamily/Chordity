@@ -450,3 +450,8 @@ pre.chart .sc{scroll-margin-top:84px}
 .sx .sdock .snav{box-shadow:none;background:var(--panel)}
 @media (max-width:640px){.tools{padding:8px 12px}.tg{border-right:0;padding-right:0}.tools .more{margin-left:0}.sx>.song.open{padding:8px 12px}}
 @media print{#perpustakaan:has(.sx){overflow:visible}#list:has(.sx){display:block;height:auto}.sx{overflow:visible;display:block}.sx>.song.open,.tools,.sdock{display:none!important}.sheet,.sx>.chartbox{overflow:visible;display:block}}
+
+/* v27.1: workspace harus meregang setinggi panel di semua lebar layar (laptop/tablet/HP) */
+#list:has(.sx){display:flex;flex-direction:row;align-items:stretch;align-content:stretch;grid-template-columns:none;height:100%;min-height:0}
+.sx{align-self:stretch;height:100%;max-height:100%}
+.sheet{overflow-y:auto!important;-webkit-overflow-scrolling:touch;touch-action:pan-y}
