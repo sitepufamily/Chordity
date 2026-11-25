@@ -12,7 +12,7 @@ function tline(l,d){return isCh(l)?l.replace(/[A-G][#b]?/g,m=>tr1(m,d)):l}
 function baseKey(s){const m=(s.k||'').match(/^([A-G][#b]?)/);if(m)return SH.indexOf(FL[m[1]]||m[1]);for(const l of (s.x||'').split('\n'))if(isCh(l)){const r=l.match(/[A-G][#b]?/);if(r)return SH.indexOf(FL[r[0]]||r[0])}return 0}
 /* Modulasi per bagian: s.md = {indeksBagian:{d:semiton,t:'teks penanda'}}.
    d relatif terhadap nada lagu yang sedang tampil; teks penanda dicocokkan agar aman setelah chord diedit. */
-let showMod=false,ctlOpen=store.get('rl-ctl',true);
+let showMod=false,ctlOpen=store.get('rl-ctl2',false);
 const secList=s=>(s.x||'').split('\n').map(r=>r.trim()).filter(t=>t&&SEC.test(t));
 const secMod=(s,i,t)=>{const m=s.md&&s.md[i];return m&&m.t===t?(m.d|0):0};
 function setMod(s,i,t,d){d=((d%12)+12)%12;if(d>6)d-=12;const md=Object.assign({},s.md);if(d)md[i]={d,t};else delete md[i];if(Object.keys(md).length)s.md=md;else delete s.md}
@@ -57,6 +57,7 @@ return'<div class="sdock"><div class="snav"><button class="sn" type="button" dat
 +'</div><button class="sn" type="button" data-a="sn" data-id="'+s.id+'" data-d="1" aria-label="Bagian berikutnya">›</button></div></div>'+(cap?'<div class="scap">Chordity · Per Section</div>':'')}
 const chartRoot=()=>pvId?$('pvpre'):document.querySelector('#list .chartbox pre.chart');
 function scroller(el){for(let p=el.parentElement;p;p=p.parentElement){const o=getComputedStyle(p).overflowY;if((o==='auto'||o==='scroll')&&p.scrollHeight>p.clientHeight)return p}return document.scrollingElement}
+const secOff=()=>pvId?$('pvbar').offsetHeight:0;
 const secCards=r=>[...r.querySelectorAll('.sc[data-si]')];
 const secCur=r=>Math.max(0,secCards(r).findIndex(c=>c.classList.contains('on')));
 function secMark(r,i){secCards(r).forEach((c,k)=>c.classList.toggle('on',k===i));
@@ -65,10 +66,10 @@ const ps=nv.querySelectorAll('.spills button'),pl=nv.querySelector('.spills');ps
 const p=ps[i];if(p)pl.scrollTo({left:p.offsetLeft-(pl.clientWidth-p.offsetWidth)/2,behavior:'smooth'})}
 function secGo(b){const r=chartRoot();if(!r)return;const cs=secCards(r);if(!cs.length)return;
 let i=+b.dataset.i;if(b.dataset.a==='sn')i=secCur(r)+ +b.dataset.d;i=Math.max(0,Math.min(cs.length-1,i));
-const sc=scroller(r),top=cs[i].getBoundingClientRect().top-sc.getBoundingClientRect().top+sc.scrollTop-(pvId?$('pvbar').offsetHeight:0)-8;
+const sc=scroller(r),top=cs[i].getBoundingClientRect().top-sc.getBoundingClientRect().top+sc.scrollTop-secOff()-8;
 secLock=Date.now()+700;sc.scrollTo({top,behavior:'smooth'});secMark(r,i)}
 function secScan(){if(Date.now()<secLock)return;const r=chartRoot();if(!r)return;const cs=secCards(r);if(!cs.length)return;
-const sc=scroller(r),b=sc.getBoundingClientRect(),ref=b.top+(pvId?$('pvbar').offsetHeight:0)+24,tp=cs.map(c=>c.getBoundingClientRect().top);let k=0;
+const sc=scroller(r),b=sc.getBoundingClientRect(),ref=b.top+secOff()+24,tp=cs.map(c=>c.getBoundingClientRect().top);let k=0;
 tp.forEach((t,i)=>{if(t<=ref)k=i});
 const cur=secCur(r),row=tp.map((t,i)=>i).filter(i=>Math.abs(tp[i]-tp[k])<4),end=sc.scrollTop+sc.clientHeight>=sc.scrollHeight-2;
 if(row.includes(cur))k=cur;else if(end&&tp[cur]>=ref-4)k=cur;else k=row[0];
@@ -82,13 +83,16 @@ P=(a,t,on)=>B(a,t,' aria-pressed="'+on+'"'),
 G=(l,h,w)=>'<div class="cg'+(w?' wide':'')+'"><span class="cgl">'+l+'</span>'+h+'</div>',
 keys=KL.map((k,i)=>'<button class="btn sm" data-a="key" data-k="'+i+'"'+id+' aria-pressed="'+(cu===i)+'">'+k+'</button>').join(''),
 modHint=!showMod?'':!s.x?'':hasSec?'<p class="chint">Ketuk − / + atau pilih nada pada penanda bagian di bawah. “↧ Lanjut” menyamakan semua bagian sesudahnya.</p>':'<p class="chint">Belum ada penanda bagian. Tekan Edit lalu tulis penanda di barisnya sendiri, mis. [Verse], [Chorus], atau Bridge, agar tiap bagian bisa punya nada sendiri.</p>';
-return '<div class="chartbox"><div class="ctlbar"><span class="cgl">Kontrol lagu</span><button class="btn sm" data-a="ctl"'+id+' aria-expanded="'+ctlOpen+'">'+(ctlOpen?'Sembunyikan':'Tampilkan')+'</button></div><div class="chartctl"'+(ctlOpen?'':' hidden')+'>'
+return '<div class="chartbox"><div class="tools">'
++B('ch','\u2039 Daftar',' title="Kembali ke daftar lagu"').replace('btn sm','btn sm back')
++'<div class="tg" role="group" aria-label="Tampilan">'+B('fs','A\u2212',' data-d="-1"')+B('fs','A+',' data-d="1"')+P('tc','Chord',showC)+P('tl','Lirik',showL)+P('cols','2 Kolom',cols2)+'</div>'
++'<div class="tg" role="group" aria-label="Auto scroll">'+P('as',asOn?'Stop':'Auto scroll',asOn)+'<input type="range" class="asr" min="1" max="12" value="'+asSpeed+'" aria-label="Kecepatan auto scroll" title="Kecepatan"></div>'
++'<button class="btn sm more" data-a="ctl"'+id+' aria-expanded="'+ctlOpen+'">Nada '+KL[cu]+(n?' \u00b7 '+n+' mod':'')+' '+(ctlOpen?'\u25b4':'\u25be')+'</button></div>'
++'<div class="chartctl drawer"'+(ctlOpen?'':' hidden')+'>'
 +G('Nada dasar','<div class="kgrid">'+keys+'</div><div class="crow">'+B('tr','Lebih rendah',' data-d="-1"')+B('tr','Lebih tinggi',' data-d="1"')+(trans?B('perm','Simpan nada ini'):'')+'</div>',1)
-+G('Modulasi per bagian','<div class="crow">'+P('mod','Atur nada tiap bagian'+(n?' · '+n:''),showMod)+(n?B('mclr','Hapus semua modulasi'):'')+'</div>'+modHint)
-+G('Tampilan','<div class="crow">'+B('fs','A\u2212',' data-d="-1"')+B('fs','A+',' data-d="1"')+P('tc','Chord',showC)+P('tl','Lirik',showL)+P('cols','2 Kolom',cols2)+'</div>')
++G('Modulasi per bagian','<div class="crow">'+P('mod','Atur nada tiap bagian'+(n?' \u00b7 '+n:''),showMod)+(n?B('mclr','Hapus semua modulasi'):'')+'</div>'+modHint)
 +G('Aksi','<div class="crow">'+B('ed','Edit')+B('pr','Cetak')+B('pv','Presenter view')+'</div>')
-+G('Auto scroll','<div class="crow">'+P('as',asOn?'Stop scroll':'Auto scroll',asOn)+'<label>Kecepatan</label><input type="range" class="asr grow" min="1" max="12" value="'+asSpeed+'" aria-label="Kecepatan auto scroll"></div>')
-+'</div><pre class="chart'+(cols2?' c2':'')+'" style="font-size:'+fs+'px">'+(s.x?sheetHtml(s,showMod):'Belum ada chord. Tekan Edit untuk menambahkan.')+'</pre>'+secNav(s)+'</div>'}
++'</div><div class="sheet"><pre class="chart'+(cols2?' c2':'')+'" style="font-size:'+fs+'px">'+(s.x?sheetHtml(s,showMod):'Belum ada chord. Tekan Edit untuk menambahkan.')+'</pre></div>'+secNav(s)+'</div>'}
 const SEEDS=[
 {id:1,t:'Canon in D',c:'Pachelbel',k:'D',b:55,x:'D  A  Bm  F#m\nG  D  G  A',s:'latihan'},
 {id:2,t:'Für Elise',c:'Beethoven',k:'A minor',b:120,s:'belajar'},
@@ -103,7 +107,7 @@ $('list').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=+
 if(b.dataset.a==='sn'||b.dataset.a==='sj'){secGo(b);return}
 if(modAct(s,b)){renderSongs();return}
 if(b.dataset.a==='mod'){showMod=!showMod;renderSongs();return}
-if(b.dataset.a==='ctl'){ctlOpen=!ctlOpen;store.set('rl-ctl',ctlOpen);renderSongs();return}
+if(b.dataset.a==='ctl'){ctlOpen=!ctlOpen;store.set('rl-ctl2',ctlOpen);renderSongs();return}
 if(b.dataset.a==='del')songs=songs.filter(x=>x.id!==id);
 if(b.dataset.a==='st')s.s=ST[(ST.indexOf(s.s)+1)%3];
 if(b.dataset.a==='ch'){openSong=openSong===id?0:id;trans=0;editSong=0;renderSongs();return}
@@ -270,7 +274,7 @@ $('evaddb').onclick=()=>{const v=+$('evadd').value;if(v){cur().s.push(v);renderE
 /* Auto scroll & Presenter */
 function setAS(on){asOn=on;asRun++;document.querySelectorAll('[data-a="as"]').forEach(b=>{b.setAttribute('aria-pressed',on);b.textContent=on?'Stop scroll':'Auto scroll'});if(on){asLast=performance.now();asAcc=0;const g=asRun;requestAnimationFrame(t=>asLoop(t,g))}}
 function asLoop(t,g){if(!asOn||g!==asRun)return;asAcc+=asSpeed*8*(t-asLast)/1000;asLast=t;const px=Math.floor(asAcc);
-if(px>0){asAcc-=px;if(pvId){const el=$('pv');el.scrollTop+=px;if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)return setAS(false)}else{const el=$(curTab);el.scrollTop+=px;if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)return setAS(false)}}
+if(px>0){asAcc-=px;if(pvId){const el=$('pv');el.scrollTop+=px;if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)return setAS(false)}else{const el=(curTab==='perpustakaan'&&document.querySelector('#list .sheet'))||$(curTab);el.scrollTop+=px;if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)return setAS(false)}}
 requestAnimationFrame(t2=>asLoop(t2,g))}
 document.addEventListener('input',e=>{if(e.target.classList.contains('asr')){asSpeed=+e.target.value;document.querySelectorAll('.asr').forEach(x=>x.value=asSpeed)}});
 function renderPv(){if(typeof pvId==='string'){renderPvMed();return}const s=songs.find(x=>x.id===pvId);if(!s){closePv();return}
