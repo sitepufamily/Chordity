@@ -22,7 +22,7 @@
 <main>
 <h1>Chordity</h1>
 <div id="greet" aria-live="off"><span></span></div>
-<div class="acct" id="acct" hidden><span id="who"></span><span id="sst"></span><span id="ver" style="opacity:.55;font-size:11px">v21</span><button class="btn sm" id="out" type="button">Keluar</button></div>
+<div class="acct" id="acct" hidden><span id="who"></span><span id="sst"></span><span id="ver" style="opacity:.55;font-size:11px">v22</span><button class="btn sm" id="out" type="button">Keluar</button></div>
 <nav role="tablist">
 <i id="pill" aria-hidden="true"></i>
 <button role="tab" data-t="metronom">Metronom</button>
@@ -138,6 +138,7 @@
 </div><div class="pb"><div id="evlist"></div></div><div class="pc">
 <div class="row"><select id="evadd" aria-label="Pilih lagu"></select><button class="btn main" id="evaddb">Tambah ke draf</button></div>
 <div class="row"><button class="btn main" id="evpv">Presenter view</button><button class="btn" id="evmd">Buat medley</button></div>
+<div class="row"><button class="btn" id="evpdf" type="button">Unduh PDF</button><button class="btn" id="evsh" type="button" hidden>Bagikan</button></div>
 <div class="sub" id="evsum"></div></div>
 </section>
 </div>
@@ -165,6 +166,7 @@
 <div id="md" hidden role="dialog" aria-label="Buat medley"><div id="mdbox"></div></div>
 <script src="app.js"></script>
 <script src="library.js"></script>
+<script src="pdf.js"></script>
 <script src="sync.js"></script>
 <script src="auth.js"></script>
 <script src="effects.js"></script>
