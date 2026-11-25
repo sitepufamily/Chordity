@@ -479,3 +479,10 @@ main:has(#perpustakaan.on .sx) #deck{margin-top:0}
 .sheet.fitted::after{display:none}
 .sheet.fitted+.sdock{display:none}
 @media (max-width:640px){.ttl{flex-basis:100%;max-width:none;order:-1}.tools .back{order:-2}}
+
+/* ===== v30: pilihan kolom (Otomatis/1/2/3/4) lewat laci; mode scroll memakai grid --cn ===== */
+.sheet pre.chart.cg{display:grid;grid-template-columns:repeat(var(--cn,2),minmax(0,1fr));column-count:auto;column-gap:0;align-items:stretch;
+background-image:repeating-linear-gradient(to right,transparent 0,transparent calc(100%/var(--cn,2) - 1px),var(--line) calc(100%/var(--cn,2) - 1px),var(--line) calc(100%/var(--cn,2)))}
+.sheet pre.chart.cg .sc.pre,.sheet pre.chart.cg .medh{grid-column:1/-1}
+.drawer .chint{margin:6px 0 0;font-size:.78rem;color:var(--mute);line-height:1.4}
+.drawer [data-a="cn"]{min-width:var(--h-ctl)}
