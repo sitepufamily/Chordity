@@ -1,6 +1,6 @@
 /* Chordity — akun & sinkron Supabase (gabung per-item + penanda hapus) */
 /* Akun & sinkron (Supabase) — v17: gabung per-item + penanda hapus, aman dipakai banyak perangkat */
-const APPV='v20';
+const APPV='v21';
 const CFG=window.RL_CONFIG||{};
 const sbOn=!!(window.supabase&&/^https?:\/\//.test(CFG.url||'')&&CFG.key&&!/^GANTI/.test(CFG.key));
 let sb=null,user=null,applying=false,dirty=false,syncP=null,again=false,amode='login',authBusy=false,chan=null,commitT=null,pushT=null,deferT=null,retryT=null,pollT=null,retryN=0,seenTs=0,lastErr='',lastOk=0;

@@ -272,3 +272,27 @@ section#acara.two{align-items:start;align-content:start;grid-template-columns:mi
 #pv{inset:3vh 4vw;border-radius:26px;border:1px solid var(--line);box-shadow:0 0 0 100vmax rgba(5,7,12,.66),0 30px 80px rgba(0,0,0,.55)}
 #pvbar{padding-top:12px}
 }
+
+/* ===== Medley (v21) ===== */
+#md{position:fixed;inset:0;z-index:60;background:rgba(5,7,12,.66);display:flex;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 12px) 12px calc(env(safe-area-inset-bottom,0px) + 12px)}
+#mdbox{width:100%;max-width:980px;max-height:100%;overflow:auto;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,.55);scrollbar-width:none}
+#mdbox::-webkit-scrollbar{display:none}
+.mdh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:1.15rem}
+.mdg{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@media (min-width:760px){.mdg{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}#mdlist{max-height:58vh}}
+#mdq{width:100%;margin-bottom:8px;padding:10px 12px;color:var(--ink)}
+#mdlist{display:flex;flex-direction:column;gap:6px;max-height:30vh;overflow:auto;scrollbar-width:thin}
+.mdi{display:flex;gap:10px;align-items:center;text-align:left;border:1px solid transparent;background:var(--panel2);color:var(--ink);border-radius:14px;padding:8px 10px;font:inherit;cursor:pointer}
+.mdi i{flex:0 0 28px;height:28px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;background:var(--panel);border:1px solid var(--line);color:var(--mute)}
+.mdi.on{border-color:color-mix(in srgb,var(--brass) 60%,transparent);background:color-mix(in srgb,var(--brass) 14%,var(--panel2))}
+.mdi.on i{background:var(--grad);color:var(--on);border-color:transparent}
+.mdi b{display:block}.mdi small{color:var(--mute)}
+.mdi:disabled{opacity:.45;cursor:not-allowed}
+.mdrow{display:flex;gap:8px;align-items:center;background:var(--panel2);border-radius:14px;padding:8px 10px;margin-bottom:6px}
+.mdrow .t{flex:1;min-width:0}.mdrow small{color:var(--mute);display:block}
+.mdk{margin:12px 0 6px;font-weight:700}
+.song.med{border-left:3px solid var(--brass)}
+pre.chart .medh{column-span:all;margin:18px 0 6px;break-inside:avoid}
+pre.chart .medh small{color:var(--mute);margin-left:8px;font:500 .8em system-ui,sans-serif}
+#pvbar .jmp{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+#pvbar .jmp .btn{flex:0 0 auto}
