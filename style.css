@@ -572,3 +572,20 @@ pre.chart .medh span.sec{background:none;color:var(--ink);padding:0;margin:0;bor
 pre.chart .medh small{margin:0;color:var(--mute);font:500 .78em system-ui,sans-serif}
 .sheet pre.chart.cg .medh{grid-column:1/-1}
 #pv .ttl b{font-size:1.02rem}
+
+/* ===== v35: chord di atas lirik, rapi & efisien untuk pemusik ===== */
+pre.chart{white-space:normal;overflow-wrap:normal;font-family:ui-monospace,Menlo,Consolas,monospace}
+pre.chart .sb{display:block}
+pre.chart .u{display:block;margin:0 0 .55em;break-inside:avoid;line-height:1.3;color:var(--ink)}
+pre.chart .pr{padding-top:.1em}
+pre.chart .wd{display:inline-block;white-space:pre;vertical-align:bottom}
+pre.chart .sg{display:inline-flex;flex-direction:column;vertical-align:bottom}
+pre.chart .sg .cl{font-weight:800;font-size:1em;line-height:1.25;min-height:1.25em;padding-right:.5em;color:var(--brass);letter-spacing:.01em}
+pre.chart .sg .lt{white-space:pre;line-height:1.35;font-size:.98em;color:var(--ink)}
+pre.chart .cr{display:flex;flex-wrap:wrap;gap:.15em 1em;margin-bottom:.45em}
+pre.chart .cr .cl{font-weight:800;color:var(--brass)}
+pre.chart .cl.bar{color:var(--mute);font-weight:500}
+pre.chart .ly{white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink)}
+pre.chart .sc.pre .ly{color:var(--mute);font-style:italic;font-size:.92em}
+pre.chart .sb .u:last-child{margin-bottom:.3em}
+@media print{pre.chart .sg .cl,pre.chart .cr .cl{color:#000!important}}

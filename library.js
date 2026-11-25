@@ -38,16 +38,29 @@ if(a==='sfwd'){const d=secMod(s,i,t);secList(s).forEach((x,j)=>{if(j>i)setMod(s,
 if(a==='mclr'){delete s.md;return true}
 return false}
 const modSel=el=>{const s=songs.find(x=>x.id===+el.dataset.id);if(s)setMod(s,+el.dataset.i,el.dataset.t,+el.value-(baseKey(s)+trans));return s};
-function sheetHtml(s,ctl){const O=[],bk=baseKey(s),f0=flat;let c=null,st=0,si=-1,sd=0,hd='',bd=[];
-const fl=()=>{if(c&&c.length)bd.push('<div class="u">'+c.join('\n')+'</div>');c=null;st=0},
-cl=()=>{fl();if(hd||bd.length)O.push('<div class="sc'+(hd?(si===0&&ctl!==undefined?' on':''):' pre')+'"'+(hd?' data-si="'+si+'"':'')+'>'+hd+'<div class="sb">'+bd.join('')+'</div></div>');hd='';bd=[]};
+/* v35: chord terikat ke suku kata. Baris chord + lirik dipecah per kata; saat layar sempit baris
+   dibungkus per kata, sehingga chord tidak pernah terlepas dari liriknya. */
+const BARK=/^([|•·.:–-]+|x\d+)$/;
+function chordRow(ch){const o=[];ch.replace(/\S+/g,w=>{o.push('<span class="cl'+(BARK.test(w)?' bar':'')+'">'+esc(w)+'</span>')});return '<div class="u cr">'+o.join('')+'</div>'}
+function lyricRow(t){return '<div class="u ly">'+esc(t)+'</div>'}
+function pairRow(ch,ly){const pts=[];ch.replace(/\S+/g,(w,i)=>{pts.push([i,w])});if(!pts.length)return lyricRow(ly);
+if(ly.length<pts[pts.length-1][0])ly=ly.padEnd(pts[pts.length-1][0]);
+const U=[];const add=(c,t)=>U.push({c,t});
+if(pts[0][0]>0)ly.slice(0,pts[0][0]).replace(/\S+\s*|\s+/g,w=>{add('',w)});
+pts.forEach((p,k)=>{const seg=ly.slice(p[0],k+1<pts.length?pts[k+1][0]:ly.length);const m=seg.match(/^\s*\S+\s*|^\s+/);const first=m?m[0]:'';add(p[1],first);seg.slice(first.length).replace(/\S+\s*|\s+/g,w=>{add('',w)})});
+let g=[],G=[],prevEnd=true;
+U.forEach(u=>{if(prevEnd&&g.length){G.push(g);g=[]}g.push(u);prevEnd=/\s$/.test(u.t)||!u.t});if(g.length)G.push(g);
+return '<div class="u pr">'+G.map(w=>'<span class="wd">'+w.map(u=>'<span class="sg">'+(u.c?'<span class="cl'+(BARK.test(u.c)?' bar':'')+'">'+esc(u.c)+'</span>':'')+'<span class="lt">'+(u.t?esc(u.t):'&#8203;')+'</span></span>').join('')+'</span>').join('')+'</div>'}
+function sheetHtml(s,ctl){const O=[],bk=baseKey(s),f0=flat;let si=-1,sd=0,hd='',bd=[],pc=null;
+const fp=()=>{if(pc!==null){if(showC)bd.push(chordRow(pc));pc=null}},
+cl=()=>{fp();if(hd||bd.length)O.push('<div class="sc'+(hd?(si===0&&ctl!==undefined?' on':''):' pre')+'"'+(hd?' data-si="'+si+'"':'')+'>'+hd+'<div class="sb">'+bd.join('')+'</div></div>');hd='';bd=[]};
 (s.x||'').split('\n').forEach(raw=>{const t0=raw.trim();
 if(t0&&SEC.test(t0)){cl();si++;sd=secMod(s,si,t0);flat=sd?FLATK.includes((bk+trans+sd+1200)%12):f0;hd=secHead(s,si,t0,sd,bk,ctl);return}
-const l=tline(raw,trans+sd),t=l.trim();
-if(!t){fl();bd.push('<div class="gp"></div>');return}
-if(st===2||(c&&c.length>=6))fl();if(!c)c=[];
-if(isCh(l)){st=1;if(showC)c.push('<span class="cl">'+esc(l)+'</span>')}
-else{if(st>=1)st=2;if(showL)c.push(esc(l))}});
+const l=tline(raw,trans+sd).replace(/\s+$/,''),t=l.trim();
+if(!t){fp();return}
+if(isCh(l)){fp();pc=l;return}
+if(pc!==null){if(showC&&showL)bd.push(pairRow(pc,l));else if(showC)bd.push(chordRow(pc));else if(showL)bd.push(lyricRow(l));pc=null}
+else if(showL)bd.push(lyricRow(l))});
 cl();flat=f0;return O.join('')}
 /* Navigasi per bagian: pil di bawah, bagian aktif mengikuti gulir (atau ketukan pil) */
 let secRaf=0,secLock=0;
