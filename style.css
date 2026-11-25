@@ -341,3 +341,29 @@ pre.chart .sh .msel{padding:3px 6px}
 #pvnav .snav{position:static;margin:0 auto;pointer-events:auto}
 @media print{.snav,.scap{display:none!important}pre.chart,pre.chart .sc,pre.chart .sc.on{background:#fff!important}pre.chart .u,pre.chart .cl,pre.chart .sh{color:#000!important}pre.chart .no,pre.chart .dot{display:none}}
 .chartbox:has(.snav)::after{content:"";display:block;height:45vh}
+
+/* ===== v25: tampilan "per bagian" disamakan dengan tema (ungu), 2 kolom dirapikan ===== */
+#pv{--bg:#0d1017;--panel:#161a23;--panel2:#1e2430;--ink:#eceff5;--mute:#8a93a6;--line:#272d3a;--brass:#9a8fff;--on:#0d1017}
+.chartbox{padding:12px}
+.chartbox pre.chart{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:6px 0 64px;overflow:hidden;column-fill:balance}
+pre.chart .u{color:color-mix(in srgb,var(--ink) 82%,var(--brass));margin:0 0 12px}
+pre.chart .cl{color:var(--brass);font-weight:700}
+pre.chart .sc{padding:14px 18px 6px;background:transparent;border-bottom:1px solid var(--line);transition:background .25s,box-shadow .25s}
+pre.chart .sc.on{background:color-mix(in srgb,var(--brass) 11%,var(--panel));box-shadow:inset 3px 0 0 var(--brass)}
+pre.chart .sc.pre{background:transparent}
+pre.chart .sh{color:var(--ink)}
+pre.chart .dot{background:var(--mute);opacity:.6}
+pre.chart .sc.on .dot{background:var(--brass);opacity:1;box-shadow:0 0 8px var(--brass)}
+pre.chart .no{color:var(--mute)}
+pre.chart .mbg{color:var(--brass);border-color:color-mix(in srgb,var(--brass) 45%,transparent)}
+pre.chart .sh .mb,pre.chart .sh .msel{color:var(--ink);background:var(--panel2);border:1px solid var(--line)}
+pre.chart .sh .mb:hover{border-color:var(--brass)}
+.snav{background:color-mix(in srgb,var(--panel2) 88%,transparent);border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.snav .sn{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+.snav .sn:hover{border-color:var(--brass);color:var(--brass)}
+.spills button{color:var(--mute)}
+.spills button.on{background:var(--grad);color:var(--on)}
+.scap{color:var(--brass)}
+#pvnav{background:linear-gradient(transparent,var(--bg) 55%)}
+@media (min-width:460px){pre.chart.c2{column-gap:0;column-rule:1px solid var(--line)}pre.chart.c2 .sc{border-bottom:1px solid var(--line)}pre.chart.c2 .sc:first-child{border-top:0}}
+@media print{pre.chart .sc.on{box-shadow:none}}
