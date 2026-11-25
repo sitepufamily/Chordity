@@ -12,7 +12,7 @@ function tline(l,d){return isCh(l)?l.replace(/[A-G][#b]?/g,m=>tr1(m,d)):l}
 function baseKey(s){const m=(s.k||'').match(/^([A-G][#b]?)/);if(m)return SH.indexOf(FL[m[1]]||m[1]);for(const l of (s.x||'').split('\n'))if(isCh(l)){const r=l.match(/[A-G][#b]?/);if(r)return SH.indexOf(FL[r[0]]||r[0])}return 0}
 /* Modulasi per bagian: s.md = {indeksBagian:{d:semiton,t:'teks penanda'}}.
    d relatif terhadap nada lagu yang sedang tampil; teks penanda dicocokkan agar aman setelah chord diedit. */
-let showMod=false,ctlOpen=store.get('rl-ctl2',false);
+let showMod=false,ctlOpen=store.get('rl-ctl2',false),fitOn=store.get('rl-fit',true);
 const secList=s=>(s.x||'').split('\n').map(r=>r.trim()).filter(t=>t&&SEC.test(t));
 const secMod=(s,i,t)=>{const m=s.md&&s.md[i];return m&&m.t===t?(m.d|0):0};
 function setMod(s,i,t,d){d=((d%12)+12)%12;if(d>6)d-=12;const md=Object.assign({},s.md);if(d)md[i]={d,t};else delete md[i];if(Object.keys(md).length)s.md=md;else delete s.md}
@@ -83,16 +83,19 @@ P=(a,t,on)=>B(a,t,' aria-pressed="'+on+'"'),
 G=(l,h,w)=>'<div class="cg'+(w?' wide':'')+'"><span class="cgl">'+l+'</span>'+h+'</div>',
 keys=KL.map((k,i)=>'<button class="btn sm" data-a="key" data-k="'+i+'"'+id+' aria-pressed="'+(cu===i)+'">'+k+'</button>').join(''),
 modHint=!showMod?'':!s.x?'':hasSec?'<p class="chint">Ketuk − / + atau pilih nada pada penanda bagian di bawah. “↧ Lanjut” menyamakan semua bagian sesudahnya.</p>':'<p class="chint">Belum ada penanda bagian. Tekan Edit lalu tulis penanda di barisnya sendiri, mis. [Verse], [Chorus], atau Bridge, agar tiap bagian bisa punya nada sendiri.</p>';
+const ttl='<div class="ttl"><b>'+esc(s.t)+'</b><small>'+esc([s.c,s.k].filter(Boolean).join(', '))+'</small></div>';
 return '<div class="chartbox"><div class="tools">'
-+B('ch','\u2039 Daftar',' title="Kembali ke daftar lagu"').replace('btn sm','btn sm back')
-+'<div class="tg" role="group" aria-label="Tampilan">'+B('fs','A\u2212',' data-d="-1"')+B('fs','A+',' data-d="1"')+P('tc','Chord',showC)+P('tl','Lirik',showL)+P('cols','2 Kolom',cols2)+'</div>'
++B('ch','\u2039 Daftar',' title="Kembali ke daftar lagu"').replace('btn sm','btn sm back')+ttl
++'<div class="tg" role="group" aria-label="Tampilan">'+(fitOn?'':B('fs','A\u2212',' data-d="-1"')+B('fs','A+',' data-d="1"'))+P('tc','Chord',showC)+P('tl','Lirik',showL)+(fitOn?'':P('cols','2 Kolom',cols2))+P('fit','Muat layar',fitOn)+'</div>'
 +'<div class="tg" role="group" aria-label="Auto scroll">'+P('as',asOn?'Stop':'Auto scroll',asOn)+'<input type="range" class="asr" min="1" max="12" value="'+asSpeed+'" aria-label="Kecepatan auto scroll" title="Kecepatan"></div>'
-+'<button class="btn sm more" data-a="ctl"'+id+' aria-expanded="'+ctlOpen+'">Nada '+KL[cu]+(n?' \u00b7 '+n+' mod':'')+' '+(ctlOpen?'\u25b4':'\u25be')+'</button></div>'
++'<button class="btn sm more" data-a="ctl"'+id+' aria-expanded="'+ctlOpen+'">Nada '+KL[cu]+(n?' \u00b7 '+n+' mod':'')+' '+(ctlOpen?'\u25b4':'\u25be')+'</button>'
++B('fsc','\u2922',' aria-label="Layar penuh" title="Layar penuh"')+'</div>'
 +'<div class="chartctl drawer"'+(ctlOpen?'':' hidden')+'>'
 +G('Nada dasar','<div class="kgrid">'+keys+'</div><div class="crow">'+B('tr','Lebih rendah',' data-d="-1"')+B('tr','Lebih tinggi',' data-d="1"')+(trans?B('perm','Simpan nada ini'):'')+'</div>',1)
 +G('Modulasi per bagian','<div class="crow">'+P('mod','Atur nada tiap bagian'+(n?' \u00b7 '+n:''),showMod)+(n?B('mclr','Hapus semua modulasi'):'')+'</div>'+modHint)
 +G('Aksi','<div class="crow">'+B('ed','Edit')+B('pr','Cetak')+B('pv','Presenter view')+'</div>')
-+'</div><div class="sheet"><pre class="chart'+(cols2?' c2':'')+'" style="font-size:'+fs+'px">'+(s.x?sheetHtml(s,showMod):'Belum ada chord. Tekan Edit untuk menambahkan.')+'</pre></div>'+secNav(s)+'</div>'}
++G('Lagu','<div class="crow">'+(s.b?B('bpm',s.b+' BPM \u00b7 pakai di metronom'):'')+B('st','Status: '+(s.s||'belajar'))+B('del','Hapus lagu')+'</div>')
++'</div><div class="sheet"><pre class="chart'+(fitOn?' fit':(cols2?' c2':''))+'" style="font-size:'+fs+'px">'+(s.x?sheetHtml(s,showMod):'Belum ada chord. Tekan Edit untuk menambahkan.')+'</pre></div>'+secNav(s)+'</div>'}
 const SEEDS=[
 {id:1,t:'Canon in D',c:'Pachelbel',k:'D',b:55,x:'D  A  Bm  F#m\nG  D  G  A',s:'latihan'},
 {id:2,t:'Für Elise',c:'Beethoven',k:'A minor',b:120,s:'belajar'},
@@ -107,6 +110,8 @@ $('list').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=+
 if(b.dataset.a==='sn'||b.dataset.a==='sj'){secGo(b);return}
 if(modAct(s,b)){renderSongs();return}
 if(b.dataset.a==='mod'){showMod=!showMod;renderSongs();return}
+if(b.dataset.a==='fit'){fitOn=!fitOn;store.set('rl-fit',fitOn);renderSongs();return}
+if(b.dataset.a==='fsc'){const d=document;d.fullscreenElement?d.exitFullscreen():d.documentElement.requestFullscreen().catch(()=>{});return}
 if(b.dataset.a==='ctl'){ctlOpen=!ctlOpen;store.set('rl-ctl2',ctlOpen);renderSongs();return}
 if(b.dataset.a==='del')songs=songs.filter(x=>x.id!==id);
 if(b.dataset.a==='st')s.s=ST[(ST.indexOf(s.s)+1)%3];
@@ -304,3 +309,29 @@ $('pv').onchange=e=>{const el=e.target;if(el.dataset&&el.dataset.a==='msel'&&typ
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('md').hidden)closeMd();else if(pvId)closePv()});
 $('evpv').onclick=()=>{const e=cur();if(!e||!e.s.length)return;trans=0;const l=e.s.map(x=>isMed(x)?x.m:x);openPv(l[0],l)};
 $('evmd').onclick=()=>openMd(null);
+
+
+/* ===== v29: Muat layar — font & jumlah kolom dihitung otomatis agar seluruh lagu muat tanpa scroll ===== */
+let fitQ=0,wasFocus=false;
+function fitSheet(){
+const sh=document.querySelector('#list .sheet'),foc=!!document.querySelector('#list .sx');
+if(wasFocus&&!foc&&typeof movePill==='function')requestAnimationFrame(()=>{try{movePill(curTab,true)}catch(e){}});
+wasFocus=foc;
+if(!sh)return;const pre=sh.firstElementChild;if(!pre||!pre.classList.contains('chart'))return;
+const H=sh.clientHeight,W=sh.clientWidth;
+const off=()=>{sh.classList.remove('fitted');pre.classList.remove('fit');if(cols2)pre.classList.add('c2');pre.style.height='';pre.style.columnCount='';pre.style.fontSize=fs+'px'};
+if(!fitOn||!H||!W){if(!fitOn)sh.classList.remove('fitted');return}
+pre.classList.add('fit');pre.classList.remove('c2');pre.style.height=H+'px';
+const maxN=Math.max(1,Math.min(4,Math.floor(W/340)));let best=null;
+for(let n=1;n<=maxN;n++){pre.style.columnCount=n;
+const fits=f=>{pre.style.fontSize=f+'px';return pre.scrollWidth<=pre.clientWidth+1};
+let lo=11,hi=22;if(!fits(lo))continue;
+while(lo<hi){const m=Math.ceil((lo+hi)/2);if(fits(m))lo=m;else hi=m-1}
+if(!best||lo>best.f)best={n,f:lo}}
+if(best){pre.style.columnCount=best.n;pre.style.fontSize=best.f+'px';sh.classList.add('fitted')}else off()}
+function fitSoon(){if(fitQ)return;fitQ=requestAnimationFrame(()=>{fitQ=0;fitSheet()})}
+new MutationObserver(()=>fitSheet()).observe($('list'),{childList:true});
+window.addEventListener('resize',fitSoon);
+if(window.ResizeObserver)new ResizeObserver(fitSoon).observe($('perpustakaan'));
+document.addEventListener('fullscreenchange',fitSoon);
+fitSheet();

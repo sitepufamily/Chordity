@@ -455,3 +455,27 @@ pre.chart .sc{scroll-margin-top:84px}
 #list:has(.sx){display:flex;flex-direction:row;align-items:stretch;align-content:stretch;grid-template-columns:none;height:100%;min-height:0}
 .sx{align-self:stretch;height:100%;max-height:100%}
 .sheet{overflow-y:auto!important;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+
+/* ===== v29: mode fokus — header app disembunyikan, chord mendapat hampir seluruh layar ===== */
+main:has(#perpustakaan.on .sx){padding:8px clamp(8px,1.2vw,16px)}
+main:has(#perpustakaan.on .sx)>h1,main:has(#perpustakaan.on .sx)>#greet,main:has(#perpustakaan.on .sx)>nav,main:has(#perpustakaan.on .sx)>.acct{display:none}
+main:has(#perpustakaan.on .sx) #deck{margin-top:0}
+#perpustakaan:has(.sx){padding:0}
+.sx{border:0;border-radius:0}
+.sx>.song.open{display:none}
+/* toolbar satu baris: kembali · judul · tampilan · auto scroll · nada · layar penuh */
+.tools{padding:8px 12px;gap:8px 10px}
+.ttl{flex:1 1 180px;min-width:0;max-width:340px;display:flex;flex-direction:column;line-height:1.2;margin-right:auto}
+.ttl b{font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ttl small{color:var(--mute);font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tools .more{margin-left:0}
+.tools [data-a="fsc"]{width:var(--h-ctl);padding:0;font-size:1rem}
+.tools [data-a="fit"][aria-pressed="true"]{border-color:var(--brass)}
+/* Muat layar: kolom mengalir horizontal dengan tinggi = tinggi area; JS memilih font & jumlah kolom terbesar yang muat */
+.sheet pre.chart.fit{display:block;columns:auto;column-fill:auto;column-gap:0;column-rule:1px solid var(--line);overflow:hidden;min-height:0;padding:0;margin:0;border:0;border-radius:0;background:transparent}
+.sheet pre.chart.fit .sc{break-inside:avoid;padding:10px 16px 4px}
+.sheet pre.chart.fit .sc.on{background:transparent;box-shadow:none}
+.sheet.fitted{overflow:hidden!important}
+.sheet.fitted::after{display:none}
+.sheet.fitted+.sdock{display:none}
+@media (max-width:640px){.ttl{flex-basis:100%;max-width:none;order:-1}.tools .back{order:-2}}
