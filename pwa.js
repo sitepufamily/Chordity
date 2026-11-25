@@ -1,0 +1,2 @@
+/* Chordity — service worker & pembaruan otomatis */
+if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let rl=0;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had||rl)return;const a=document.activeElement;if(typeof editSong!=='undefined'&&editSong)return;if(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))return;rl=1;location.reload()});addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{}))}

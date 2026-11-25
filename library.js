@@ -1,0 +1,177 @@
+/* Chordity — lagu, chord, scale, acara, auto scroll, presenter */
+/* Perpustakaan */
+const ST=['belajar','latihan','siap'];
+let openSong=0,trans=0,editSong=0,fs=15,showC=true,showL=true,flat=false,asOn=false,asSpeed=4,asAcc=0,asLast=0,asRun=0,pvId=0,pvList=[],pvFs=24,wl=null,cols2=store.get('rl-cols',true);
+const SH=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'],FL={Db:'C#',Eb:'D#',Gb:'F#',Ab:'G#',Bb:'A#'};
+const CK=/^[A-G][#b]?(maj|min|m|dim|aug|sus|add|M)?\d*(\/[A-G][#b]?)?$/;
+const KL=['C','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'],FLN=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'],FLATK=[1,3,5,8,10];
+const SEC=/^\s*(\[[^\]]+\]|(intro|verse|chorus|bridge|outro|refrain|reff?|bait|interlude|pre-?chorus|ending|coda|tag)\s*\d*\s*:?)\s*$/i;
+function tr1(n,d){n=FL[n]||n;const i=(SH.indexOf(n)+d+1200)%12;return flat?FLN[i]:SH[i]}
+function isCh(l){const t=l.trim().split(/\s+/).filter(w=>w&&!/^([|•·.:–-]+|x\d)$/.test(w));return t.length>0&&t.every(w=>CK.test(w))}
+function tline(l,d){return isCh(l)?l.replace(/[A-G][#b]?/g,m=>tr1(m,d)):l}
+function baseKey(s){const m=(s.k||'').match(/^([A-G][#b]?)/);if(m)return SH.indexOf(FL[m[1]]||m[1]);for(const l of (s.x||'').split('\n'))if(isCh(l)){const r=l.match(/[A-G][#b]?/);if(r)return SH.indexOf(FL[r[0]]||r[0])}return 0}
+function sheetHtml(s){const U=[];let c=null,st=0;
+const fl=()=>{if(c&&c.length)U.push('<div class="u">'+c.join('\n')+'</div>');c=null;st=0};
+(s.x||'').split('\n').forEach(raw=>{const l=tline(raw,trans),t=l.trim();
+if(!t){fl();U.push('<div class="gp"></div>');return}
+if(SEC.test(t)){fl();U.push('<div class="u h"><span class="sec">'+esc(t)+'</span></div>');return}
+if(st===2||(c&&c.length>=6))fl();if(!c)c=[];
+if(isCh(l)){st=1;if(showC)c.push('<span class="cl">'+esc(l)+'</span>')}
+else{if(st>=1)st=2;if(showL)c.push(esc(l))}});
+fl();return U.join('')}
+function editBox(s){return '<div class="chartbox"><textarea id="ex" aria-label="Edit chord">'+esc(s.x||'')+'</textarea><div class="row" style="justify-content:flex-start;margin:6px 0 0"><button class="btn sm main" data-a="sv" data-id="'+s.id+'">Simpan</button><button class="btn sm" data-a="cx" data-id="'+s.id+'">Batal</button></div></div>'}
+function chartBox(s){if(editSong===s.id)return editBox(s);const bk=baseKey(s),cu=(bk+trans+1200)%12;flat=FLATK.includes(cu);const id=' data-id="'+s.id+'"';
+const keys=KL.map((n,i)=>'<button class="btn sm" data-a="key" data-k="'+i+'"'+id+' aria-pressed="'+(cu===i)+'">'+n+'</button>').join('');
+return '<div class="chartbox"><div class="chartctl"><div class="chips" style="justify-content:flex-start;margin-bottom:8px">'+keys+'</div><div class="row" style="justify-content:flex-start;margin:0 0 8px"><button class="btn sm" data-a="tr" data-d="-1"'+id+'>Lebih rendah</button><button class="btn sm" data-a="tr" data-d="1"'+id+'>Lebih tinggi</button><button class="btn sm" data-a="fs" data-d="-1"'+id+'>A−</button><button class="btn sm" data-a="fs" data-d="1"'+id+'>A+</button><button class="btn sm" data-a="tc"'+id+' aria-pressed="'+showC+'">Chord</button><button class="btn sm" data-a="tl"'+id+' aria-pressed="'+showL+'">Lirik</button><button class="btn sm" data-a="cols"'+id+' aria-pressed="'+cols2+'">2 Kolom</button><button class="btn sm" data-a="ed"'+id+'>Edit</button><button class="btn sm" data-a="pr"'+id+'>Cetak</button>'+(trans?'<button class="btn sm" data-a="perm"'+id+'>Simpan nada ini</button>':'')+'</div><div class="row" style="justify-content:flex-start;margin:0 0 8px"><button class="btn sm" data-a="as"'+id+' aria-pressed="'+asOn+'">'+(asOn?'Stop scroll':'Auto scroll')+'</button><label>Kecepatan</label><input type="range" class="asr" min="1" max="12" value="'+asSpeed+'" style="flex:1;min-width:90px;width:auto" aria-label="Kecepatan auto scroll"><button class="btn sm" data-a="pv"'+id+'>Presenter view</button></div></div><pre class="chart'+(cols2?' c2':'')+'" style="font-size:'+fs+'px">'+(s.x?sheetHtml(s):'Belum ada chord. Tekan Edit untuk menambahkan.')+'</pre></div>'}
+const SEEDS=[
+{id:1,t:'Canon in D',c:'Pachelbel',k:'D',b:55,x:'D  A  Bm  F#m\nG  D  G  A',s:'latihan'},
+{id:2,t:'Für Elise',c:'Beethoven',k:'A minor',b:120,s:'belajar'},
+{id:3,t:'Greensleeves',c:'Tradisional',k:'E minor',b:90,s:'siap'}];
+const SEED_JSON=JSON.stringify(SEEDS);
+let songs=store.get('songs',SEEDS);
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function renderSongs(){store.set('songs',songs);$('list').innerHTML=songs.length?songs.map(s=>'<div class="song"><div class="t"><b>'+esc(s.t)+'</b><small>'+esc([s.c,s.k].filter(Boolean).join(', '))+'</small></div>'+
+(s.b?'<button class="btn sm" data-a="bpm" data-id="'+s.id+'" title="Pakai tempo ini di metronom">'+s.b+' BPM</button>':'')+
+'<button class="btn sm" data-a="ch" data-id="'+s.id+'">Chord</button>'+'<button class="st '+s.s+'" data-a="st" data-id="'+s.id+'">'+s.s+'</button><button class="btn sm" data-a="del" data-id="'+s.id+'" aria-label="Hapus">✕</button></div>'+(openSong===s.id?chartBox(s):'')).join(''):'<div class="empty">Belum ada lagu. Tambahkan lagu pertamamu di bawah.</div>'}
+$('list').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=+b.dataset.id,s=songs.find(x=>x.id===id);if(!s)return;
+if(b.dataset.a==='del')songs=songs.filter(x=>x.id!==id);
+if(b.dataset.a==='st')s.s=ST[(ST.indexOf(s.s)+1)%3];
+if(b.dataset.a==='ch'){openSong=openSong===id?0:id;trans=0;editSong=0;renderSongs();return}
+if(b.dataset.a==='tr'){trans+=+b.dataset.d;renderSongs();return}
+if(b.dataset.a==='ed'){editSong=id;renderSongs();return}
+if(b.dataset.a==='cx'){editSong=0;renderSongs();return}
+if(b.dataset.a==='fs'){fs=Math.max(10,Math.min(28,fs+2*(+b.dataset.d)));renderSongs();return}
+if(b.dataset.a==='tc'){showC=!showC;renderSongs();return}
+if(b.dataset.a==='tl'){showL=!showL;renderSongs();return}
+if(b.dataset.a==='cols'){cols2=!cols2;store.set('rl-cols',cols2);renderSongs();return}
+if(b.dataset.a==='pr'){window.print();return}
+if(b.dataset.a==='as'){setAS(!asOn);return}
+if(b.dataset.a==='pv'){openPv(id,[]);return}
+if(b.dataset.a==='key'){let d=(+b.dataset.k-baseKey(s)+12)%12;if(d>6)d-=12;trans=d;renderSongs();return}
+if(b.dataset.a==='sv'){s.x=$('ex').value;editSong=0;renderSongs();return}
+if(b.dataset.a==='perm'){s.x=(s.x||'').split('\n').map(l=>tline(l,trans)).join('\n');if(/^[A-G][#b]?m?$/.test(s.k||''))s.k=tline(s.k,trans);trans=0;renderSongs();return}
+if(b.dataset.a==='bpm'){setBpm(s.b);location.hash='metronom';return}
+renderSongs()};
+const F=id=>document.querySelector('#f #'+id);
+$('fa').onclick=()=>{const t=F('ft').value.trim();if(!t){F('ft').focus();return}
+songs.unshift({id:Date.now(),t,c:F('fc').value.trim(),k:F('fk').value.trim(),b:+F('fb').value||0,x:F('fx').value,s:'belajar'});
+['ft','fc','fk','fb','fx'].forEach(i=>F(i).value='');renderSongs();location.hash='perpustakaan'};
+renderSongs();
+
+/* Chord */
+const CT={'mayor':[0,4,7],'minor (m)':[0,3,7],'7':[0,4,7,10],'maj7':[0,4,7,11],'m7':[0,3,7,10],'sus4':[0,5,7],'dim':[0,3,6]};
+const CS={'mayor':'','minor (m)':'m','7':'7','maj7':'maj7','m7':'m7','sus4':'sus4','dim':'dim'};
+const SHP={C:'x32010',D:'xx0232',E:'022100',G:'320003',A:'x02220',F:'133211',Am:'x02210',Dm:'xx0231',Em:'022000',Bm:'x24432',C7:'x32310',D7:'xx0212',E7:'020100',G7:'320001',A7:'x02020',B7:'x21202',Cmaj7:'x32000',Fmaj7:'xx3210',Am7:'x02010',Dm7:'xx0211',Em7:'022030'};
+function diag(sh){const f=sh.split('').map(c=>c==='x'?-1:+c),nz=f.filter(x=>x>0),base=nz.length&&Math.max(...nz)>4?Math.min(...nz):1;let s='';
+for(let i=0;i<6;i++){const x=20+i*26;s+='<line x1="'+x+'" y1="30" x2="'+x+'" y2="170" stroke="currentColor" stroke-width="1.5"/>';
+if(f[i]===-1)s+='<text x="'+x+'" y="22" text-anchor="middle" font-size="14" fill="currentColor">×</text>';else if(f[i]===0)s+='<circle cx="'+x+'" cy="17" r="5" fill="none" stroke="currentColor"/>';else s+='<circle cx="'+x+'" cy="'+(30+(f[i]-base+1)*28-14)+'" r="9" fill="var(--brass)"/>'}
+for(let r=0;r<=5;r++)s+='<line x1="20" y1="'+(30+r*28)+'" x2="150" y2="'+(30+r*28)+'" stroke="currentColor" stroke-width="'+(r===0&&base===1?4:1)+'"/>';
+if(base>1)s+='<text x="158" y="50" font-size="12" fill="currentColor">'+base+'</text>';return s}
+function renderChord(){const r=+$('cr').value,t=$('ct').value,name=SH[r]+CS[t],sh=SHP[name];$('cn').textContent=name;$('cnotes').textContent='Nada: '+CT[t].map(i=>SH[(r+i)%12]).join(', ');$('cd').innerHTML=sh?diag(sh):'';$('cmsg').textContent=sh?'Gitar, senar 6 ke 1 (× = tidak dimainkan, ○ = senar kosong)':'Diagram tersedia untuk akor umum di posisi terbuka'}
+SH.forEach((n,i)=>$('cr').add(new Option(n,i)));Object.keys(CT).forEach(k=>$('ct').add(new Option(k,k)));
+$('cr').onchange=$('ct').onchange=renderChord;renderChord();
+$('cplay').onclick=()=>{audio();const r=+$('cr').value;CT[$('ct').value].forEach((i,j)=>beep(ctx.currentTime+j*.06,440*Math.pow(2,(48+r+i-69)/12),1.6,.15))};
+
+/* Scale: bentuk scale di fretboard bass & gitar */
+const SC_R=['C','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'],SC_DEG=['1','b2','2','b3','3','4','b5','5','b6','6','b7','7'],SC_LET='CDEFGAB',SC_NP=[0,2,4,5,7,9,11],SC_FR=17,
+SC_T=[{k:'mayor',n:'Mayor',iv:[0,2,4,5,7,9,11]},{k:'minor',n:'Minor (natural)',iv:[0,2,3,5,7,8,10]},{k:'pmay',n:'Pentatonik Mayor',iv:[0,2,4,7,9]},{k:'pmin',n:'Pentatonik Minor',iv:[0,3,5,7,10]},{k:'blues',n:'Blues',iv:[0,3,5,6,7,10],pat:[0,3,5,7,10],ex:[6]},{k:'dor',n:'Dorian',iv:[0,2,3,5,7,9,10]},{k:'mix',n:'Mixolydian',iv:[0,2,4,5,7,9,10]},{k:'hmin',n:'Minor Harmonik',iv:[0,2,3,5,7,8,11]}],
+SC_I=[{id:'bass',n:'Bass',s:[28,33,38,43],l:['E','A','D','G']},{id:'gitar',n:'Gitar',s:[40,45,50,55,59,64],l:['E','A','D','G','B','E']}];
+let sc=Object.assign({r:0,k:'mayor',p:0,i:'both',m:'nada'},store.get('rl-sc',{}));
+if(!(sc.r>=0&&sc.r<12))sc.r=0;if(!SC_T.some(t=>t.k===sc.k))sc.k='mayor';
+function scSpell(r,iv){const t=(SC_LET.indexOf(SC_R[r][0])+ +SC_DEG[iv].slice(-1)-1)%7;let d=(((r+iv)%12-SC_NP[t])%12+12)%12;if(d>6)d-=12;return SC_LET[t]+(d>0?'#'.repeat(d):'b'.repeat(-d))}
+function scPat(ins,r,T,j){const iv=T.pat||T.iv,per=iv.length===7?3:2,set=new Set(iv.map(x=>(r+x)%12)),low=ins.s[0],L=[];
+for(let p=low;p<low+48;p++)if(set.has(p%12))L.push(p);
+let ix=L.findIndex(p=>p%12===(r+iv[j])%12);const o=[];
+ins.s.forEach((b,s)=>{for(let q=0;q<per;q++)o.push([s,L[ix++]-b])});
+let best=null;[-12,0,12].forEach(sh=>{const f=o.map(x=>x[1]+sh);if(Math.min(...f)<0)return;const ov=f.filter(x=>x>SC_FR).length,mx=Math.max(...f);if(!best||ov<best.ov||(ov===best.ov&&mx<best.mx))best={sh,ov,mx}});
+const sh=best?best.sh:12,P=o.map(x=>[x[0],x[1]+sh]).filter(x=>x[1]>=0&&x[1]<=SC_FR);
+if(T.ex&&P.length){const mn=Math.min(...P.map(x=>x[1])),mx=Math.max(...P.map(x=>x[1]));ins.s.forEach((b,s)=>{for(let f=mn;f<=mx;f++)if(T.ex.includes(((b+f-r)%12+12)%12)&&!P.some(x=>x[0]===s&&x[1]===f))P.push([s,f])})}
+return P}
+function scSvg(ins,r,T,P){const ns=ins.s.length,G=28,top=20,W=760,x0=66,fw=(W-x0-8)/SC_FR,H=top+(ns-1)*G+44,y=s=>top+(ns-1-s)*G,xm=f=>f?x0+(f-.5)*fw:x0-20,
+set=new Set(T.iv),ps=P&&new Set(P.map(x=>x[0]+':'+x[1])),y0=y(ns-1)-8,y1=y(0)+8,ym=(y(0)+y(ns-1))/2,dy=(ns-1)*G/4;
+let o='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Fretboard '+ins.n+'">';
+for(let f=1;f<=SC_FR;f++)o+='<line class="fbf" x1="'+(x0+f*fw)+'" y1="'+y0+'" x2="'+(x0+f*fw)+'" y2="'+y1+'"/>';
+o+='<line class="fbn" x1="'+x0+'" y1="'+(y0-1)+'" x2="'+x0+'" y2="'+(y1+1)+'"/>';
+[3,5,7,9,15,17].forEach(f=>o+='<circle class="fbi" cx="'+xm(f)+'" cy="'+ym+'" r="5"/>');
+o+='<circle class="fbi" cx="'+xm(12)+'" cy="'+(ym-dy)+'" r="5"/><circle class="fbi" cx="'+xm(12)+'" cy="'+(ym+dy)+'" r="5"/>';
+for(let s=0;s<ns;s++){o+='<line class="fbs" stroke-width="'+(2.8-s*.35).toFixed(2)+'" x1="'+(x0-36)+'" y1="'+y(s)+'" x2="'+(W-8)+'" y2="'+y(s)+'"/><text class="fbl" x="10" y="'+(y(s)+4)+'">'+ins.l[s]+'</text>'}
+[3,5,7,9,12,15,17].forEach(f=>o+='<text class="fbt" x="'+xm(f)+'" y="'+(H-8)+'">'+f+'</text>');
+for(let s=0;s<ns;s++)for(let f=0;f<=SC_FR;f++){const i=((ins.s[s]+f-r)%12+12)%12;if(!set.has(i))continue;
+const on=!ps||ps.has(s+':'+f),rt=i===0,cx=xm(f),cy=y(s);
+if(!on){o+='<circle class="fnn d" cx="'+cx+'" cy="'+cy+'" r="5"/>';continue}
+o+='<circle class="fnn'+(rt?' r':'')+'" cx="'+cx+'" cy="'+cy+'" r="11"/><text class="fnt'+(rt?' r':'')+'" x="'+cx+'" y="'+(cy+4)+'">'+(sc.m==='nada'?scSpell(r,i):SC_DEG[i])+'</text>'}
+return o+'</svg>'}
+function renderScale(){const T=SC_T.find(t=>t.k===sc.k),pat=T.pat||T.iv;if(sc.p>pat.length)sc.p=0;
+$('sr').value=sc.r;$('sk').value=sc.k;
+$('snotes').textContent='Nada: '+T.iv.map(i=>scSpell(sc.r,i)).join(' ');
+const chip=(a,v,t,on,x)=>'<button class="btn sm" type="button" data-'+a+'="'+v+'" aria-pressed="'+on+'"'+(x||'')+'>'+t+'</button>';
+$('spos').innerHTML=chip('p',0,'Semua',sc.p===0)+pat.map((_,j)=>chip('p',j+1,j+1,sc.p===j+1,' aria-label="Posisi '+(j+1)+'"')).join('');
+$('sins').innerHTML=[['both','Keduanya'],['bass','Bass'],['gitar','Gitar']].map(a=>chip('i',a[0],a[1],sc.i===a[0])).join('');
+$('slab').innerHTML=[['nada','Nada'],['derajat','Derajat']].map(a=>chip('m',a[0],a[1],sc.m===a[0])).join('');
+let h='';SC_I.forEach(ins=>{if(sc.i!=='both'&&sc.i!==ins.id)return;const P=sc.p?scPat(ins,sc.r,T,sc.p-1):null;
+let cap='';if(P&&P.length){const f=P.map(x=>x[1]);cap=' · Fret '+Math.min(...f)+'–'+Math.max(...f)}
+h+='<div class="fbh"><b>'+ins.n+'</b><span>'+ins.l.join(' ')+cap+'</span></div><div class="fbscroll"'+(P&&P.length?' data-f="'+Math.min(...P.map(x=>x[1]))+'"':'')+'>'+scSvg(ins,sc.r,T,P)+'</div>'});
+$('sfb').innerHTML=h;
+document.querySelectorAll('#sfb .fbscroll').forEach(e=>{const f=+e.dataset.f||0;e.scrollLeft=f>2?Math.max(0,(66+(f-1.6)*((760-74)/SC_FR))/760*e.scrollWidth-6):0});
+$('shint').textContent=(sc.p?'Titik pudar = nada scale lain di luar bentuk. Posisi '+sc.p+' dimulai dari derajat ke-'+sc.p+' di senar terendah. ':'Pilih nomor posisi untuk melihat satu bentuk scale. ')+'Titik berwarna = nada dasar. Geser diagram ke samping jika layar sempit.';
+store.set('rl-sc',sc)}
+SC_R.forEach((n,i)=>$('sr').add(new Option(n,i)));SC_T.forEach(t=>$('sk').add(new Option(t.n,t.k)));
+$('sr').onchange=()=>{sc.r=+$('sr').value;renderScale()};$('sk').onchange=()=>{sc.k=$('sk').value;renderScale()};
+$('scale').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;if(d.p!==undefined)sc.p=+d.p;else if(d.i)sc.i=d.i;else if(d.m)sc.m=d.m;else return;renderScale()});
+renderScale();
+
+/* Acara */
+let evs=store.get('events',[]),curEv=store.get('curEv',0);
+function saveEv(){store.set('events',evs);store.set('curEv',curEv)}
+function cur(){return evs.find(e=>e.id===curEv)}
+function renderEv(){
+if(!evs.length){evs=[{id:Date.now(),n:'Acara pertama',d:'',s:[]}];curEv=evs[0].id}
+if(!cur())curEv=evs[0].id;
+const e=cur();
+$('ev').innerHTML=evs.map(x=>'<option value="'+x.id+'"'+(x.id===curEv?' selected':'')+'>'+esc(x.n||'Tanpa nama')+'</option>').join('');
+$('evname').value=e.n;$('evdate').value=e.d;
+e.s=e.s.filter(id=>songs.some(x=>x.id===id));
+$('evlist').innerHTML=e.s.length?e.s.map((id,i)=>{const s=songs.find(x=>x.id===id);return '<div class="song"><span>'+(i+1)+'.</span><div class="t"><b>'+esc(s.t)+'</b><small>'+esc([s.k,s.b?s.b+' BPM':''].filter(Boolean).join(', '))+'</small></div>'+'<button class="btn sm" data-a="ch" data-id="'+id+'">Chord</button>'+'<button class="btn sm" data-a="up" data-i="'+i+'" aria-label="Naik">▲</button><button class="btn sm" data-a="dn" data-i="'+i+'" aria-label="Turun">▼</button><button class="btn sm" data-a="rm" data-i="'+i+'" aria-label="Hapus dari draf">✕</button></div>'}).join(''):'<div class="empty">Draf masih kosong. Pilih lagu dari perpustakaan di bawah.</div>';
+const rest=songs.filter(s=>!e.s.includes(s.id));
+$('evadd').innerHTML=rest.length?rest.map(s=>'<option value="'+s.id+'">'+esc(s.t)+'</option>').join(''):'<option value="">Semua lagu sudah masuk</option>';
+$('evsum').textContent=e.s.length+' lagu dalam draf';
+saveEv()}
+$('evlist').onclick=e=>{const b=e.target.closest('button');if(!b)return;const ev=cur(),i=+b.dataset.i,a=b.dataset.a;
+if(a==='ch'){openSong=+b.dataset.id;trans=0;renderSongs();location.hash='perpustakaan';return}
+if(a==='rm')ev.s.splice(i,1);
+if(a==='up'&&i>0)[ev.s[i-1],ev.s[i]]=[ev.s[i],ev.s[i-1]];
+if(a==='dn'&&i<ev.s.length-1)[ev.s[i+1],ev.s[i]]=[ev.s[i],ev.s[i+1]];
+renderEv()};
+$('ev').onchange=e=>{curEv=+e.target.value;renderEv()};
+$('evn').onclick=()=>{const n={id:Date.now(),n:'Acara baru',d:'',s:[]};evs.push(n);curEv=n.id;renderEv();$('evname').select()};
+$('evd').onclick=()=>{if(evs.length>1){evs=evs.filter(x=>x.id!==curEv);curEv=evs[0].id}else{cur().s=[];cur().n='Acara pertama';cur().d=''}renderEv()};
+$('evname').oninput=e=>{cur().n=e.target.value;saveEv();const o=$('ev').selectedOptions[0];if(o)o.textContent=e.target.value||'Tanpa nama'};
+$('evdate').onchange=e=>{cur().d=e.target.value;saveEv()};
+$('evaddb').onclick=()=>{const v=+$('evadd').value;if(v){cur().s.push(v);renderEv()}};
+
+/* Auto scroll & Presenter */
+function setAS(on){asOn=on;asRun++;document.querySelectorAll('[data-a="as"]').forEach(b=>{b.setAttribute('aria-pressed',on);b.textContent=on?'Stop scroll':'Auto scroll'});if(on){asLast=performance.now();asAcc=0;const g=asRun;requestAnimationFrame(t=>asLoop(t,g))}}
+function asLoop(t,g){if(!asOn||g!==asRun)return;asAcc+=asSpeed*8*(t-asLast)/1000;asLast=t;const px=Math.floor(asAcc);
+if(px>0){asAcc-=px;if(pvId){const el=$('pv');el.scrollTop+=px;if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)return setAS(false)}else{const el=$(curTab);el.scrollTop+=px;if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)return setAS(false)}}
+requestAnimationFrame(t2=>asLoop(t2,g))}
+document.addEventListener('input',e=>{if(e.target.classList.contains('asr')){asSpeed=+e.target.value;document.querySelectorAll('.asr').forEach(x=>x.value=asSpeed)}});
+function renderPv(){const s=songs.find(x=>x.id===pvId);if(!s){closePv();return}
+const cu=(baseKey(s)+trans+1200)%12;flat=FLATK.includes(cu);const i=pvList.indexOf(pvId),B=(a,t,x)=>'<button class="btn sm" data-a="'+a+'"'+(x||'')+'>'+t+'</button>';
+const keys=KL.map((n,k)=>'<button class="btn sm" data-a="key" data-k="'+k+'" aria-pressed="'+(cu===k)+'">'+n+'</button>').join('');
+$('pvbar').innerHTML='<div class="row" style="justify-content:space-between;margin:0 0 6px"><b>'+esc(s.t)+'</b>'+B('x','Tutup')+'</div><div class="chips" style="justify-content:flex-start;margin-bottom:6px">'+keys+'</div><div class="row" style="justify-content:flex-start;margin:0">'+(pvList.length>1?B('pn','Sebelumnya',' data-d="-1"'+(i<1?' disabled':''))+B('pn','Berikutnya',' data-d="1"'+(i>=pvList.length-1?' disabled':'')):'')+B('tr','Lebih rendah',' data-d="-1"')+B('tr','Lebih tinggi',' data-d="1"')+B('fs','A\u2212',' data-d="-1"')+B('fs','A+',' data-d="1"')+'<button class="btn sm" data-a="tc" aria-pressed="'+showC+'">Chord</button><button class="btn sm" data-a="tl" aria-pressed="'+showL+'">Lirik</button><button class="btn sm" data-a="cols" aria-pressed="'+cols2+'">2 Kolom</button><button class="btn sm" data-a="as" aria-pressed="'+asOn+'">'+(asOn?'Stop scroll':'Auto scroll')+'</button><input type="range" class="asr" min="1" max="12" value="'+asSpeed+'" style="width:110px" aria-label="Kecepatan auto scroll"></div>';
+$('pvpre').className='chart'+(cols2?' c2':'');$('pvpre').style.fontSize=pvFs+'px';$('pvpre').innerHTML=s.x?sheetHtml(s):'Belum ada chord untuk lagu ini.'}
+function openPv(id,list){pvId=id;pvList=list&&list.length?list:[id];setAS(false);$('pv').hidden=false;document.body.style.overflow='hidden';renderPv();$('pv').scrollTop=0;try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>wl=w).catch(()=>{})}catch(e){}}
+function closePv(){pvId=0;$('pv').hidden=true;document.body.style.overflow='';setAS(false);try{wl&&wl.release();wl=null}catch(e){}renderSongs()}
+$('pv').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a,s=songs.find(x=>x.id===pvId);if(!s)return;
+if(a==='x'){closePv();return}
+if(a==='as'){setAS(!asOn);return}
+if(a==='tr')trans+=+b.dataset.d;
+if(a==='key'){let d=(+b.dataset.k-baseKey(s)+12)%12;if(d>6)d-=12;trans=d}
+if(a==='fs')pvFs=Math.max(14,Math.min(60,pvFs+2*(+b.dataset.d)));
+if(a==='tc')showC=!showC;
+if(a==='tl')showL=!showL;
+if(a==='cols'){cols2=!cols2;store.set('rl-cols',cols2)}
+if(a==='pn'){const j=pvList.indexOf(pvId)+ +b.dataset.d;if(pvList[j]){pvId=pvList[j];trans=0;$('pv').scrollTop=0}}
+renderPv()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&pvId)closePv()});
+$('evpv').onclick=()=>{const e=cur();if(!e||!e.s.length)return;trans=0;openPv(e.s[0],e.s.slice())};

@@ -1,5 +1,5 @@
-const CACHE = 'chordity-v18';
-const ASSETS = ['./', 'index.html', 'config.js', 'manifest.webmanifest', 'bg.jpg', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
+const CACHE = 'chordity-v19';
+const ASSETS = ['./', 'index.html', 'style.css', 'app.js', 'library.js', 'sync.js', 'auth.js', 'effects.js', 'pwa.js', 'config.js', 'manifest.webmanifest', 'bg.jpg', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
@@ -28,7 +28,17 @@ self.addEventListener('fetch', e => {
     );
     return;
   }
-  // File sendiri (mis. config.js): tampilkan dari cache, perbarui di belakang layar
+  // Kode & tampilan (js/css/html): jaringan dulu supaya semua perangkat selalu memakai versi terbaru, cache saat offline
+  if (url.origin === location.origin && /\.(js|css|html|webmanifest)$/.test(url.pathname)) {
+    e.respondWith(
+      fetch(req).then(res => {
+        if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
+        return res;
+      }).catch(() => caches.match(req))
+    );
+    return;
+  }
+  // Gambar & ikon: tampilkan dari cache, perbarui di belakang layar
   if (url.origin === location.origin) {
     e.respondWith(
       caches.match(req).then(hit => {
