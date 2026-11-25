@@ -564,3 +564,11 @@ section#acara.two{padding:0;overflow:hidden;align-items:stretch;align-content:st
 #pv .sheet pre.chart.fit .sc.on{background:color-mix(in srgb,var(--brass) 16%,var(--bg))}
 pre.chart .medh.on span.sec{color:var(--brass)}
 .snav[data-med] .spills button{white-space:nowrap}
+
+/* ===== v34: judul lagu medley menempel di toolbar; pembatas lagu di lembar dibuat rapi ===== */
+pre.chart .medh.on span.sec{color:inherit}
+pre.chart .medh{display:flex;align-items:baseline;gap:10px;margin:0;padding:8px 18px;background:var(--panel2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);break-inside:avoid;font-family:'Bricolage Grotesque',system-ui,sans-serif}
+pre.chart .medh span.sec{background:none;color:var(--ink);padding:0;margin:0;border-radius:0;font-size:.95em;font-weight:700}
+pre.chart .medh small{margin:0;color:var(--mute);font:500 .78em system-ui,sans-serif}
+.sheet pre.chart.cg .medh{grid-column:1/-1}
+#pv .ttl b{font-size:1.02rem}

@@ -60,10 +60,16 @@ function scroller(el){for(let p=el.parentElement;p;p=p.parentElement){const o=ge
 const secOff=()=>0;
 const secCards=r=>[...r.querySelectorAll('.sc[data-si]')];
 const secCur=r=>Math.max(0,secCards(r).findIndex(c=>c.classList.contains('on')));
+let medInfo=[];
+const medPills=j=>{const o=medInfo[j];return o?o.names.map((n,k)=>'<button type="button" data-a="sj" data-i="'+(o.off+k)+'">'+esc(n)+'</button>').join(''):''};
+function medDock(j){if(medInfo.reduce((a,x)=>a+x.names.length,0)<2)return'';
+return '<div class="sdock"><div class="snav" data-med="1" data-j="'+j+'"><button class="sn" type="button" data-a="sn" data-d="-1" aria-label="Bagian sebelumnya">\u2039</button><div class="spills">'+medPills(j)+'</div><button class="sn" type="button" data-a="sn" data-d="1" aria-label="Bagian berikutnya">\u203a</button></div></div>'}
 function secMark(r,i){secCards(r).forEach((c,k)=>c.classList.toggle('on',k===i));
 const box=pvId?$('pvnav'):r.closest('.chartbox'),nv=box&&box.querySelector('.snav');if(!nv)return;
-const ps=nv.querySelectorAll('.spills button'),pl=nv.querySelector('.spills');let ix=i;
-if(nv.dataset.med){const c=secCards(r)[i];let e=c;while(e&&!(e.classList&&e.classList.contains('medh')))e=e.previousElementSibling;ix=e?+e.id.slice(2):0}
+let ps=nv.querySelectorAll('.spills button');const pl=nv.querySelector('.spills');let ix=i;
+if(nv.dataset.med){let j=0;medInfo.forEach((o,q)=>{if(o.names.length&&i>=o.off)j=q});
+if(+nv.dataset.j!==j){nv.dataset.j=j;pl.innerHTML=medPills(j);const tt=$('pvbar').querySelector('.ttl');if(tt){tt.querySelector('b').textContent=medInfo[j].t;tt.querySelector('small').textContent=medInfo[j].sub+' \u00b7 Medley'}ps=nv.querySelectorAll('.spills button')}
+ix=[...ps].findIndex(q=>+q.dataset.i===i)}
 ps.forEach((p,k)=>p.classList.toggle('on',k===ix));
 const p=ps[ix];if(p)pl.scrollTo({left:p.offsetLeft-(pl.clientWidth-p.offsetWidth)/2,behavior:'smooth'})}
 function secGo(b){const r=chartRoot();if(!r)return;const cs=secCards(r);if(!cs.length)return;
@@ -71,13 +77,13 @@ let i=+b.dataset.i;if(b.dataset.a==='sn')i=secCur(r)+ +b.dataset.d;i=Math.max(0,
 if(r.classList.contains('fit')){secMark(r,i);return}
 const sc=scroller(r),top=cs[i].getBoundingClientRect().top-sc.getBoundingClientRect().top+sc.scrollTop-secOff()-8;
 secLock=Date.now()+700;sc.scrollTo({top,behavior:'smooth'});secMark(r,i)}
-function secScan(){if(Date.now()<secLock)return;const r=chartRoot();if(!r)return;const cs=secCards(r);if(!cs.length)return;
+function secScan(){if(Date.now()<secLock)return;const r=chartRoot();if(!r||r.classList.contains('fit'))return;const cs=secCards(r);if(!cs.length)return;
 const sc=scroller(r),b=sc.getBoundingClientRect(),ref=b.top+secOff()+24,tp=cs.map(c=>c.getBoundingClientRect().top);let k=0;
 tp.forEach((t,i)=>{if(t<=ref)k=i});
 const cur=secCur(r),row=tp.map((t,i)=>i).filter(i=>Math.abs(tp[i]-tp[k])<4),end=sc.scrollTop+sc.clientHeight>=sc.scrollHeight-2;
 if(row.includes(cur))k=cur;else if(end&&tp[cur]>=ref-4)k=cur;else k=row[0];
 if(k!==cur||!cs[k].classList.contains('on'))secMark(r,k)}
-document.addEventListener('scroll',()=>{if(secRaf)return;secRaf=requestAnimationFrame(()=>{secRaf=0;secScan()})},true);
+document.addEventListener('scroll',e=>{if(e.target&&e.target.closest&&e.target.closest('.snav'))return;if(secRaf)return;secRaf=requestAnimationFrame(()=>{secRaf=0;secScan()})},true);
 function editBox(s){const id=' data-id="'+s.id+'"',M=['Intro','Verse','Chorus','Bridge','Outro','Interlude'];
 return '<div class="chartbox edit"><div class="edtop"><button class="btn sm" data-a="cx"'+id+'>\u2039 Batal</button>'
 +'<div class="ttl"><b>Edit chord</b><small>'+esc(s.t)+'</small></div>'
@@ -224,10 +230,11 @@ return '<div class="medh" id="mh'+i+'"><span class="sec">'+(i+1)+'. '+esc(s.t)+'
 function renderPvMed(){const m=medOf(pvId),ss=m?m.s.map(id=>songs.find(x=>x.id===id)).filter(Boolean):[];if(!m||!ss.length){closePv();return}
 const i=pvList.indexOf(pvId),B=(a,t,x)=>'<button class="btn sm" data-a="'+a+'"'+(x||'')+'>'+t+'</button>';
 const keys=KL.map((n,k)=>'<button class="btn sm" data-a="mkey" data-k="'+k+'" aria-pressed="'+(m.k===k)+'">'+n+'</button>').join('');
+let off=0;medInfo=ss.map((x,j)=>{const d=medShift(x,m.k),L=secList(x),o={t:(j+1)+'. '+x.t,sub:KL[baseKey(x)]+' \u2192 '+KL[m.k]+(d?' ('+(d>0?'+':'')+d+')':''),names:L.map(secName),off};off+=L.length;return o});
 const jumps=ss.map((s,j)=>B('jump',(j+1)+'. '+esc(s.t),' data-i="'+j+'"')).join('');
 const drm='<div class="cg wide"><span class="cgl">Nada dasar medley</span><div class="kgrid">'+keys+'</div></div>';
-$('pvbar').innerHTML=pvBar('Medley',medName(m),KL[m.k],drm);
-$('pvpre').className='chart'+(fitOn?' fit':'');$('pvpre').style.fontSize=pvFs+'px';$('pvpre').innerHTML=medHtml(m,ss);$('pvnav').innerHTML='<div class="sdock"><div class="snav" data-med="1"><div class="spills">'+ss.map((x,j)=>'<button type="button" data-a="jump" data-i="'+j+'"'+(j===0?' class="on"':'')+'>'+(j+1)+'. '+esc(x.t)+'</button>').join('')+'</div></div></div>';requestAnimationFrame(secScan)}
+$('pvbar').innerHTML=pvBar(medInfo[0].t,medInfo[0].sub+' \u00b7 Medley',KL[m.k],drm);
+$('pvpre').className='chart'+(fitOn?' fit':'');$('pvpre').style.fontSize=pvFs+'px';$('pvpre').innerHTML=medHtml(m,ss);$('pvnav').innerHTML=medDock(0);requestAnimationFrame(secScan)}
 /* Popup medley: pilih lagu, nada dasar langsung ikut diatur */
 let mdS=[],mdK=0,mdKt=false,mdEdit=null,mdQ='';
 function openMd(m){const e=cur();if(!e)return;mdEdit=m?m.m:null;mdS=m?m.s.slice():[];mdK=m?m.k:0;mdKt=!!m;mdQ='';$('md').hidden=false;document.body.style.overflow='hidden';
