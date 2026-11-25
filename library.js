@@ -62,10 +62,13 @@ const secCards=r=>[...r.querySelectorAll('.sc[data-si]')];
 const secCur=r=>Math.max(0,secCards(r).findIndex(c=>c.classList.contains('on')));
 function secMark(r,i){secCards(r).forEach((c,k)=>c.classList.toggle('on',k===i));
 const box=pvId?$('pvnav'):r.closest('.chartbox'),nv=box&&box.querySelector('.snav');if(!nv)return;
-const ps=nv.querySelectorAll('.spills button'),pl=nv.querySelector('.spills');ps.forEach((p,k)=>p.classList.toggle('on',k===i));
-const p=ps[i];if(p)pl.scrollTo({left:p.offsetLeft-(pl.clientWidth-p.offsetWidth)/2,behavior:'smooth'})}
+const ps=nv.querySelectorAll('.spills button'),pl=nv.querySelector('.spills');let ix=i;
+if(nv.dataset.med){const c=secCards(r)[i];let e=c;while(e&&!(e.classList&&e.classList.contains('medh')))e=e.previousElementSibling;ix=e?+e.id.slice(2):0}
+ps.forEach((p,k)=>p.classList.toggle('on',k===ix));
+const p=ps[ix];if(p)pl.scrollTo({left:p.offsetLeft-(pl.clientWidth-p.offsetWidth)/2,behavior:'smooth'})}
 function secGo(b){const r=chartRoot();if(!r)return;const cs=secCards(r);if(!cs.length)return;
 let i=+b.dataset.i;if(b.dataset.a==='sn')i=secCur(r)+ +b.dataset.d;i=Math.max(0,Math.min(cs.length-1,i));
+if(r.classList.contains('fit')){secMark(r,i);return}
 const sc=scroller(r),top=cs[i].getBoundingClientRect().top-sc.getBoundingClientRect().top+sc.scrollTop-secOff()-8;
 secLock=Date.now()+700;sc.scrollTo({top,behavior:'smooth'});secMark(r,i)}
 function secScan(){if(Date.now()<secLock)return;const r=chartRoot();if(!r)return;const cs=secCards(r);if(!cs.length)return;
@@ -222,9 +225,9 @@ function renderPvMed(){const m=medOf(pvId),ss=m?m.s.map(id=>songs.find(x=>x.id==
 const i=pvList.indexOf(pvId),B=(a,t,x)=>'<button class="btn sm" data-a="'+a+'"'+(x||'')+'>'+t+'</button>';
 const keys=KL.map((n,k)=>'<button class="btn sm" data-a="mkey" data-k="'+k+'" aria-pressed="'+(m.k===k)+'">'+n+'</button>').join('');
 const jumps=ss.map((s,j)=>B('jump',(j+1)+'. '+esc(s.t),' data-i="'+j+'"')).join('');
-const drm='<div class="cg wide"><span class="cgl">Nada dasar medley</span><div class="kgrid">'+keys+'</div></div><div class="cg wide"><span class="cgl">Lompat ke lagu</span><div class="row jmp" style="justify-content:flex-start;margin:0">'+jumps+'</div></div>';
+const drm='<div class="cg wide"><span class="cgl">Nada dasar medley</span><div class="kgrid">'+keys+'</div></div>';
 $('pvbar').innerHTML=pvBar('Medley',medName(m),KL[m.k],drm);
-$('pvpre').className='chart'+(fitOn?' fit':'');$('pvpre').style.fontSize=pvFs+'px';$('pvpre').innerHTML=medHtml(m,ss);$('pvnav').innerHTML='';requestAnimationFrame(secScan)}
+$('pvpre').className='chart'+(fitOn?' fit':'');$('pvpre').style.fontSize=pvFs+'px';$('pvpre').innerHTML=medHtml(m,ss);$('pvnav').innerHTML='<div class="sdock"><div class="snav" data-med="1"><div class="spills">'+ss.map((x,j)=>'<button type="button" data-a="jump" data-i="'+j+'"'+(j===0?' class="on"':'')+'>'+(j+1)+'. '+esc(x.t)+'</button>').join('')+'</div></div></div>';requestAnimationFrame(secScan)}
 /* Popup medley: pilih lagu, nada dasar langsung ikut diatur */
 let mdS=[],mdK=0,mdKt=false,mdEdit=null,mdQ='';
 function openMd(m){const e=cur();if(!e)return;mdEdit=m?m.m:null;mdS=m?m.s.slice():[];mdK=m?m.k:0;mdKt=!!m;mdQ='';$('md').hidden=false;document.body.style.overflow='hidden';
@@ -314,7 +317,7 @@ $('pv').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.da
 if(a==='x'){closePv();return}
 if(a==='sn'||a==='sj'){secGo(b);return}
 if(a==='as'){setAS(!asOn);return}
-if(a==='jump'){const el=$('mh'+b.dataset.i),pv=$('pvsheet');if(el)pv.scrollTo({top:el.getBoundingClientRect().top-pv.getBoundingClientRect().top+pv.scrollTop-6,behavior:'smooth'});return}
+if(a==='jump'){const el=$('mh'+b.dataset.i),pv=$('pvsheet');if(el)pv.scrollTo({top:el.getBoundingClientRect().top-pv.getBoundingClientRect().top+pv.scrollTop-6,behavior:'smooth'});secLock=Date.now()+700;document.querySelectorAll('#pvnav .spills button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('#pvpre .medh').forEach(x=>x.classList.toggle('on',x===el));return}
 if(a==='mkey'&&med){med.k=+b.dataset.k;saveEv()}
 if(a==='mod')showMod=!showMod;
 if(s&&modAct(s,b))store.set('songs',songs);
