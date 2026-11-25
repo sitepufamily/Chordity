@@ -56,14 +56,16 @@ else wrapM(a.t,cols).forEach(t=>out.push({t,ch:a.ch}))}
 return out}
 
 /* ---- isi lagu: pakai aturan pengelompokan yang sama dengan layar (chord + liriknya satu unit) ---- */
-function songUnits(s,d){const U=[];let c=null,st=0;
+function songUnits(s,d){const U=[],bk=baseKey(s),f0=flat;let c=null,st=0,si=-1,sd=0;
 const fl=()=>{if(c&&c.length)U.push({k:'u',l:c});c=null;st=0};
-(s.x||'').split('\n').forEach(raw=>{const l=enc(tline(raw.replace(/\r$/,''),d)).replace(/\s+$/,''),t=l.trim();
+(s.x||'').split('\n').forEach(raw=>{const r=raw.replace(/\r$/,''),t0=r.trim();
+if(t0&&SEC.test(t0)){fl();si++;sd=secMod(s,si,t0);const cu=(bk+d+sd+1200)%12;flat=sd?FLATK.includes(cu):f0;
+U.push({k:'h',t:enc(t0)+(sd?'   [modulasi '+(sd>0?'+':'')+sd+': '+KL[(bk+d+1200)%12]+' -> '+KL[cu]+']':'')});return}
+const l=enc(tline(r,d+sd)).replace(/\s+$/,''),t=l.trim();
 if(!t){fl();U.push({k:'g'});return}
-if(SEC.test(t)){fl();U.push({k:'h',t});return}
 if(st===2||(c&&c.length>=6))fl();if(!c)c=[];
 if(isCh(l)){st=1;c.push({t:l,ch:1})}else{if(st>=1)st=2;c.push({t:l})}});
-fl();return U}
+fl();flat=f0;return U}
 function body(s,d,kf,W){W=W||CW;const two=W<CW;const f0=flat;flat=kf;let U;try{U=songUnits(s,d)}finally{flat=f0}
 if(!U.some(u=>u.k==='u'))return[eNote('(belum ada chord untuk lagu ini)')];
 let mx=1;U.forEach(u=>{(u.l||[]).forEach(x=>mx=Math.max(mx,x.t.length));if(u.t)mx=Math.max(mx,u.t.length)});

@@ -10,19 +10,58 @@ function tr1(n,d){n=FL[n]||n;const i=(SH.indexOf(n)+d+1200)%12;return flat?FLN[i
 function isCh(l){const t=l.trim().split(/\s+/).filter(w=>w&&!/^([|•·.:–-]+|x\d)$/.test(w));return t.length>0&&t.every(w=>CK.test(w))}
 function tline(l,d){return isCh(l)?l.replace(/[A-G][#b]?/g,m=>tr1(m,d)):l}
 function baseKey(s){const m=(s.k||'').match(/^([A-G][#b]?)/);if(m)return SH.indexOf(FL[m[1]]||m[1]);for(const l of (s.x||'').split('\n'))if(isCh(l)){const r=l.match(/[A-G][#b]?/);if(r)return SH.indexOf(FL[r[0]]||r[0])}return 0}
-function sheetHtml(s){const U=[];let c=null,st=0;
+/* Modulasi per bagian: s.md = {indeksBagian:{d:semiton,t:'teks penanda'}}.
+   d relatif terhadap nada lagu yang sedang tampil; teks penanda dicocokkan agar aman setelah chord diedit. */
+let showMod=false;
+const secList=s=>(s.x||'').split('\n').map(r=>r.trim()).filter(t=>t&&SEC.test(t));
+const secMod=(s,i,t)=>{const m=s.md&&s.md[i];return m&&m.t===t?(m.d|0):0};
+function setMod(s,i,t,d){d=((d%12)+12)%12;if(d>6)d-=12;const md=Object.assign({},s.md);if(d)md[i]={d,t};else delete md[i];if(Object.keys(md).length)s.md=md;else delete s.md}
+const modCount=s=>secList(s).filter((t,i)=>secMod(s,i,t)).length;
+function pruneMod(s){if(!s.md)return;const L=secList(s),md={};Object.keys(s.md).forEach(i=>{if(L[i]===s.md[i].t)md[i]=s.md[i]});if(Object.keys(md).length)s.md=md;else delete s.md}
+/* Penanda bagian: label, lencana modulasi, dan (jika ctl) kontrol ubah nada bagian itu */
+function secHead(s,i,t,d,bk,ctl){const cu=(bk+trans+d+1200)%12,at=' data-id="'+s.id+'" data-i="'+i+'" data-t="'+esc(t)+'"',
+b=(a,x,l,tx)=>'<button class="mb" type="button" data-a="'+a+'"'+at+(x||'')+' aria-label="'+l+'">'+tx+'</button>';
+let h='<div class="u h"><span class="sec">'+esc(t)+'</span>';
+if(d&&!ctl)h+='<span class="mbg">'+(d>0?'▲ ':'▼ ')+KL[cu]+' ('+(d>0?'+':'')+d+')</span>';
+if(ctl)h+='<span class="mctl">'+b('smod',' data-d="-1"','Turunkan setengah nada','−')
++'<select class="msel" data-a="msel"'+at+' aria-label="Nada bagian '+esc(t)+'">'+KL.map((n,k)=>'<option value="'+k+'"'+(k===cu?' selected':'')+'>'+n+'</option>').join('')+'</select>'
++b('smod',' data-d="1"','Naikkan setengah nada','+')
++b('sfwd','','Samakan semua bagian sesudahnya dengan bagian ini','↧ Lanjut')
++(d?b('sclr','','Kembalikan ke nada lagu','✕'):'')+'</span>';
+return h+'</div>'}
+/* Aksi tombol modulasi; true bila tombol itu milik modulasi */
+function modAct(s,b){const a=b.dataset.a,i=+b.dataset.i,t=b.dataset.t;
+if(a==='smod'){setMod(s,i,t,secMod(s,i,t)+ +b.dataset.d);return true}
+if(a==='sclr'){setMod(s,i,t,0);return true}
+if(a==='sfwd'){const d=secMod(s,i,t);secList(s).forEach((x,j)=>{if(j>i)setMod(s,j,x,d)});return true}
+if(a==='mclr'){delete s.md;return true}
+return false}
+const modSel=el=>{const s=songs.find(x=>x.id===+el.dataset.id);if(s)setMod(s,+el.dataset.i,el.dataset.t,+el.value-(baseKey(s)+trans));return s};
+function sheetHtml(s,ctl){const U=[],bk=baseKey(s),f0=flat;let c=null,st=0,si=-1,sd=0;
 const fl=()=>{if(c&&c.length)U.push('<div class="u">'+c.join('\n')+'</div>');c=null;st=0};
-(s.x||'').split('\n').forEach(raw=>{const l=tline(raw,trans),t=l.trim();
+(s.x||'').split('\n').forEach(raw=>{const t0=raw.trim();
+if(t0&&SEC.test(t0)){fl();si++;sd=secMod(s,si,t0);flat=sd?FLATK.includes((bk+trans+sd+1200)%12):f0;U.push(secHead(s,si,t0,sd,bk,ctl));return}
+const l=tline(raw,trans+sd),t=l.trim();
 if(!t){fl();U.push('<div class="gp"></div>');return}
-if(SEC.test(t)){fl();U.push('<div class="u h"><span class="sec">'+esc(t)+'</span></div>');return}
 if(st===2||(c&&c.length>=6))fl();if(!c)c=[];
 if(isCh(l)){st=1;if(showC)c.push('<span class="cl">'+esc(l)+'</span>')}
 else{if(st>=1)st=2;if(showL)c.push(esc(l))}});
-fl();return U.join('')}
+fl();flat=f0;return U.join('')}
 function editBox(s){return '<div class="chartbox"><textarea id="ex" aria-label="Edit chord">'+esc(s.x||'')+'</textarea><div class="row" style="justify-content:flex-start;margin:6px 0 0"><button class="btn sm main" data-a="sv" data-id="'+s.id+'">Simpan</button><button class="btn sm" data-a="cx" data-id="'+s.id+'">Batal</button></div></div>'}
-function chartBox(s){if(editSong===s.id)return editBox(s);const bk=baseKey(s),cu=(bk+trans+1200)%12;flat=FLATK.includes(cu);const id=' data-id="'+s.id+'"';
-const keys=KL.map((n,i)=>'<button class="btn sm" data-a="key" data-k="'+i+'"'+id+' aria-pressed="'+(cu===i)+'">'+n+'</button>').join('');
-return '<div class="chartbox"><div class="chartctl"><div class="chips" style="justify-content:flex-start;margin-bottom:8px">'+keys+'</div><div class="row" style="justify-content:flex-start;margin:0 0 8px"><button class="btn sm" data-a="tr" data-d="-1"'+id+'>Lebih rendah</button><button class="btn sm" data-a="tr" data-d="1"'+id+'>Lebih tinggi</button><button class="btn sm" data-a="fs" data-d="-1"'+id+'>A−</button><button class="btn sm" data-a="fs" data-d="1"'+id+'>A+</button><button class="btn sm" data-a="tc"'+id+' aria-pressed="'+showC+'">Chord</button><button class="btn sm" data-a="tl"'+id+' aria-pressed="'+showL+'">Lirik</button><button class="btn sm" data-a="cols"'+id+' aria-pressed="'+cols2+'">2 Kolom</button><button class="btn sm" data-a="ed"'+id+'>Edit</button><button class="btn sm" data-a="pr"'+id+'>Cetak</button>'+(trans?'<button class="btn sm" data-a="perm"'+id+'>Simpan nada ini</button>':'')+'</div><div class="row" style="justify-content:flex-start;margin:0 0 8px"><button class="btn sm" data-a="as"'+id+' aria-pressed="'+asOn+'">'+(asOn?'Stop scroll':'Auto scroll')+'</button><label>Kecepatan</label><input type="range" class="asr" min="1" max="12" value="'+asSpeed+'" style="flex:1;min-width:90px;width:auto" aria-label="Kecepatan auto scroll"><button class="btn sm" data-a="pv"'+id+'>Presenter view</button></div></div><pre class="chart'+(cols2?' c2':'')+'" style="font-size:'+fs+'px">'+(s.x?sheetHtml(s):'Belum ada chord. Tekan Edit untuk menambahkan.')+'</pre></div>'}
+function chartBox(s){if(editSong===s.id)return editBox(s);
+const bk=baseKey(s),cu=(bk+trans+1200)%12,id=' data-id="'+s.id+'"',n=modCount(s),hasSec=secList(s).length>0;flat=FLATK.includes(cu);
+const B=(a,t,x)=>'<button class="btn sm" data-a="'+a+'"'+id+(x||'')+'>'+t+'</button>',
+P=(a,t,on)=>B(a,t,' aria-pressed="'+on+'"'),
+G=(l,h,w)=>'<div class="cg'+(w?' wide':'')+'"><span class="cgl">'+l+'</span>'+h+'</div>',
+keys=KL.map((k,i)=>'<button class="btn sm" data-a="key" data-k="'+i+'"'+id+' aria-pressed="'+(cu===i)+'">'+k+'</button>').join(''),
+modHint=!showMod?'':!s.x?'':hasSec?'<p class="chint">Ketuk − / + atau pilih nada pada penanda bagian di bawah. “↧ Lanjut” menyamakan semua bagian sesudahnya.</p>':'<p class="chint">Belum ada penanda bagian. Tekan Edit lalu tulis penanda di barisnya sendiri, mis. [Verse], [Chorus], atau Bridge, agar tiap bagian bisa punya nada sendiri.</p>';
+return '<div class="chartbox"><div class="chartctl">'
++G('Nada dasar','<div class="kgrid">'+keys+'</div><div class="crow">'+B('tr','Lebih rendah',' data-d="-1"')+B('tr','Lebih tinggi',' data-d="1"')+(trans?B('perm','Simpan nada ini'):'')+'</div>',1)
++G('Modulasi per bagian','<div class="crow">'+P('mod','Atur nada tiap bagian'+(n?' · '+n:''),showMod)+(n?B('mclr','Hapus semua modulasi'):'')+'</div>'+modHint)
++G('Tampilan','<div class="crow">'+B('fs','A\u2212',' data-d="-1"')+B('fs','A+',' data-d="1"')+P('tc','Chord',showC)+P('tl','Lirik',showL)+P('cols','2 Kolom',cols2)+'</div>')
++G('Aksi','<div class="crow">'+B('ed','Edit')+B('pr','Cetak')+B('pv','Presenter view')+'</div>')
++G('Auto scroll','<div class="crow">'+P('as',asOn?'Stop scroll':'Auto scroll',asOn)+'<label>Kecepatan</label><input type="range" class="asr grow" min="1" max="12" value="'+asSpeed+'" aria-label="Kecepatan auto scroll"></div>')
++'</div><pre class="chart'+(cols2?' c2':'')+'" style="font-size:'+fs+'px">'+(s.x?sheetHtml(s,showMod):'Belum ada chord. Tekan Edit untuk menambahkan.')+'</pre></div>'}
 const SEEDS=[
 {id:1,t:'Canon in D',c:'Pachelbel',k:'D',b:55,x:'D  A  Bm  F#m\nG  D  G  A',s:'latihan'},
 {id:2,t:'Für Elise',c:'Beethoven',k:'A minor',b:120,s:'belajar'},
@@ -34,6 +73,8 @@ function renderSongs(){store.set('songs',songs);$('list').innerHTML=songs.length
 (s.b?'<button class="btn sm" data-a="bpm" data-id="'+s.id+'" title="Pakai tempo ini di metronom">'+s.b+' BPM</button>':'')+
 '<button class="btn sm" data-a="ch" data-id="'+s.id+'">Chord</button>'+'<button class="st '+s.s+'" data-a="st" data-id="'+s.id+'">'+s.s+'</button><button class="btn sm" data-a="del" data-id="'+s.id+'" aria-label="Hapus">✕</button></div>'+(openSong===s.id?chartBox(s):'')).join(''):'<div class="empty">Belum ada lagu. Tambahkan lagu pertamamu di bawah.</div>'}
 $('list').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=+b.dataset.id,s=songs.find(x=>x.id===id);if(!s)return;
+if(modAct(s,b)){renderSongs();return}
+if(b.dataset.a==='mod'){showMod=!showMod;renderSongs();return}
 if(b.dataset.a==='del')songs=songs.filter(x=>x.id!==id);
 if(b.dataset.a==='st')s.s=ST[(ST.indexOf(s.s)+1)%3];
 if(b.dataset.a==='ch'){openSong=openSong===id?0:id;trans=0;editSong=0;renderSongs();return}
@@ -48,10 +89,11 @@ if(b.dataset.a==='pr'){window.print();return}
 if(b.dataset.a==='as'){setAS(!asOn);return}
 if(b.dataset.a==='pv'){openPv(id,[]);return}
 if(b.dataset.a==='key'){let d=(+b.dataset.k-baseKey(s)+12)%12;if(d>6)d-=12;trans=d;renderSongs();return}
-if(b.dataset.a==='sv'){s.x=$('ex').value;editSong=0;renderSongs();return}
+if(b.dataset.a==='sv'){s.x=$('ex').value;pruneMod(s);editSong=0;renderSongs();return}
 if(b.dataset.a==='perm'){s.x=(s.x||'').split('\n').map(l=>tline(l,trans)).join('\n');if(/^[A-G][#b]?m?$/.test(s.k||''))s.k=tline(s.k,trans);trans=0;renderSongs();return}
 if(b.dataset.a==='bpm'){setBpm(s.b);location.hash='metronom';return}
 renderSongs()};
+$('list').onchange=e=>{const el=e.target;if(el.dataset&&el.dataset.a==='msel'&&modSel(el))renderSongs()};
 const F=id=>document.querySelector('#f #'+id);
 $('fa').onclick=()=>{const t=F('ft').value.trim();if(!t){F('ft').focus();return}
 songs.unshift({id:Date.now(),t,c:F('fc').value.trim(),k:F('fk').value.trim(),b:+F('fb').value||0,x:F('fx').value,s:'belajar'});
@@ -205,8 +247,8 @@ document.addEventListener('input',e=>{if(e.target.classList.contains('asr')){asS
 function renderPv(){if(typeof pvId==='string'){renderPvMed();return}const s=songs.find(x=>x.id===pvId);if(!s){closePv();return}
 const cu=(baseKey(s)+trans+1200)%12;flat=FLATK.includes(cu);const i=pvList.indexOf(pvId),B=(a,t,x)=>'<button class="btn sm" data-a="'+a+'"'+(x||'')+'>'+t+'</button>';
 const keys=KL.map((n,k)=>'<button class="btn sm" data-a="key" data-k="'+k+'" aria-pressed="'+(cu===k)+'">'+n+'</button>').join('');
-$('pvbar').innerHTML='<div class="row" style="justify-content:space-between;margin:0 0 6px"><b>'+esc(s.t)+'</b>'+B('x','Tutup')+'</div><div class="chips" style="justify-content:flex-start;margin-bottom:6px">'+keys+'</div><div class="row" style="justify-content:flex-start;margin:0">'+(pvList.length>1?B('pn','Sebelumnya',' data-d="-1"'+(i<1?' disabled':''))+B('pn','Berikutnya',' data-d="1"'+(i>=pvList.length-1?' disabled':'')):'')+B('tr','Lebih rendah',' data-d="-1"')+B('tr','Lebih tinggi',' data-d="1"')+B('fs','A\u2212',' data-d="-1"')+B('fs','A+',' data-d="1"')+'<button class="btn sm" data-a="tc" aria-pressed="'+showC+'">Chord</button><button class="btn sm" data-a="tl" aria-pressed="'+showL+'">Lirik</button><button class="btn sm" data-a="cols" aria-pressed="'+cols2+'">2 Kolom</button><button class="btn sm" data-a="as" aria-pressed="'+asOn+'">'+(asOn?'Stop scroll':'Auto scroll')+'</button><input type="range" class="asr" min="1" max="12" value="'+asSpeed+'" style="width:110px" aria-label="Kecepatan auto scroll"></div>';
-$('pvpre').className='chart'+(cols2?' c2':'');$('pvpre').style.fontSize=pvFs+'px';$('pvpre').innerHTML=s.x?sheetHtml(s):'Belum ada chord untuk lagu ini.'}
+$('pvbar').innerHTML='<div class="row" style="justify-content:space-between;margin:0 0 6px"><b>'+esc(s.t)+'</b>'+B('x','Tutup')+'</div><div class="chips" style="justify-content:flex-start;margin-bottom:6px">'+keys+'</div><div class="row" style="justify-content:flex-start;margin:0">'+(pvList.length>1?B('pn','Sebelumnya',' data-d="-1"'+(i<1?' disabled':''))+B('pn','Berikutnya',' data-d="1"'+(i>=pvList.length-1?' disabled':'')):'')+B('tr','Lebih rendah',' data-d="-1"')+B('tr','Lebih tinggi',' data-d="1"')+B('mod','Modulasi',' aria-pressed="'+showMod+'"')+B('fs','A\u2212',' data-d="-1"')+B('fs','A+',' data-d="1"')+'<button class="btn sm" data-a="tc" aria-pressed="'+showC+'">Chord</button><button class="btn sm" data-a="tl" aria-pressed="'+showL+'">Lirik</button><button class="btn sm" data-a="cols" aria-pressed="'+cols2+'">2 Kolom</button><button class="btn sm" data-a="as" aria-pressed="'+asOn+'">'+(asOn?'Stop scroll':'Auto scroll')+'</button><input type="range" class="asr" min="1" max="12" value="'+asSpeed+'" style="width:110px" aria-label="Kecepatan auto scroll"></div>';
+$('pvpre').className='chart'+(cols2?' c2':'');$('pvpre').style.fontSize=pvFs+'px';$('pvpre').innerHTML=s.x?sheetHtml(s,showMod):'Belum ada chord untuk lagu ini.'}
 function openPv(id,list){pvId=id;pvList=list&&list.length?list:[id];setAS(false);$('pv').hidden=false;document.body.style.overflow='hidden';renderPv();$('pv').scrollTop=0;try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>wl=w).catch(()=>{})}catch(e){}}
 function closePv(){pvId=0;$('pv').hidden=true;document.body.style.overflow='';setAS(false);try{wl&&wl.release();wl=null}catch(e){}renderSongs();renderEv()}
 $('pv').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a,med=typeof pvId==='string'?medOf(pvId):null,s=songs.find(x=>x.id===pvId);if(!s&&!med)return;
@@ -214,6 +256,8 @@ if(a==='x'){closePv();return}
 if(a==='as'){setAS(!asOn);return}
 if(a==='jump'){const el=$('mh'+b.dataset.i),pv=$('pv');if(el)pv.scrollTo({top:el.getBoundingClientRect().top-pv.getBoundingClientRect().top+pv.scrollTop-$('pvbar').offsetHeight-6,behavior:'smooth'});return}
 if(a==='mkey'&&med){med.k=+b.dataset.k;saveEv()}
+if(a==='mod')showMod=!showMod;
+if(s&&modAct(s,b))store.set('songs',songs);
 if(a==='tr')trans+=+b.dataset.d;
 if(a==='key'){let d=(+b.dataset.k-baseKey(s)+12)%12;if(d>6)d-=12;trans=d}
 if(a==='fs')pvFs=Math.max(14,Math.min(60,pvFs+2*(+b.dataset.d)));
@@ -222,6 +266,7 @@ if(a==='tl')showL=!showL;
 if(a==='cols'){cols2=!cols2;store.set('rl-cols',cols2)}
 if(a==='pn'){const j=pvList.indexOf(pvId)+ +b.dataset.d;if(pvList[j]){pvId=pvList[j];trans=0;$('pv').scrollTop=0}}
 renderPv()};
+$('pv').onchange=e=>{const el=e.target;if(el.dataset&&el.dataset.a==='msel'&&typeof pvId==='number'&&modSel(el)){store.set('songs',songs);renderPv()}};
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('md').hidden)closeMd();else if(pvId)closePv()});
 $('evpv').onclick=()=>{const e=cur();if(!e||!e.s.length)return;trans=0;const l=e.s.map(x=>isMed(x)?x.m:x);openPv(l[0],l)};
 $('evmd').onclick=()=>openMd(null);

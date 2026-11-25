@@ -296,3 +296,26 @@ pre.chart .medh{column-span:all;margin:18px 0 6px;break-inside:avoid}
 pre.chart .medh small{color:var(--mute);margin-left:8px;font:500 .8em system-ui,sans-serif}
 #pvbar .jmp{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
 #pvbar .jmp .btn{flex:0 0 auto}
+
+/* ===== v23: panel kontrol lagu dirapikan + modulasi per bagian ===== */
+.chartctl{display:grid;gap:14px;margin:0 0 14px}
+.cg{display:grid;gap:7px;min-width:0;align-content:start}
+.cgl{font-size:.7rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--mute)}
+.kgrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.kgrid .btn{padding:8px 0;text-align:center}
+.crow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.crow label{margin:0 2px 0 6px}
+.crow .grow{flex:1 1 120px;width:auto;min-width:90px}
+.chint{margin:0;font-size:.82rem;line-height:1.4;color:var(--mute)}
+@media (min-width:560px){.kgrid{grid-template-columns:repeat(12,minmax(0,1fr))}}
+@media (min-width:820px){.chartctl{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 32px}.chartctl .cg.wide{grid-column:1/-1}}
+pre.chart .u.h{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;margin:8px 0 3px}
+pre.chart .u.h .sec{margin:0}
+pre.chart .mbg{font:700 .78em system-ui,sans-serif;color:var(--brass);border:1px solid color-mix(in srgb,var(--brass) 55%,transparent);border-radius:99px;padding:1px 9px;white-space:nowrap}
+pre.chart .mctl{display:inline-flex;flex-wrap:nowrap;align-items:center;gap:4px}
+pre.chart .mb,pre.chart .msel{font:600 .78em system-ui,sans-serif;line-height:1.2;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:99px;padding:3px 10px;cursor:pointer}
+pre.chart .msel{padding:3px 6px}
+@media print{.mctl{display:none!important}}
+.chartctl{gap:10px}
+.chartctl .btn.sm{padding:6px 11px;font-size:.85rem}
+.chartctl .kgrid .btn{padding:7px 0}
