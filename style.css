@@ -367,3 +367,49 @@ pre.chart .sh .mb:hover{border-color:var(--brass)}
 #pvnav{background:linear-gradient(transparent,var(--bg) 55%)}
 @media (min-width:460px){pre.chart.c2{column-gap:0;column-rule:1px solid var(--line)}pre.chart.c2 .sc{border-bottom:1px solid var(--line)}pre.chart.c2 .sc:first-child{border-top:0}}
 @media print{pre.chart .sc.on{box-shadow:none}}
+
+/* ===== v26: tab Lagu dirapikan — satu sistem jarak (4/8px), satu panel terpadu, nav menempel ===== */
+:root{--r-s:12px;--r-m:16px;--r-l:20px;--h-ctl:34px}
+/* kartu lagu: kolom aksi lebar tetap agar sejajar antar kartu */
+#list .song{display:grid;grid-template-columns:minmax(0,1fr) 84px 76px 84px 34px;align-items:center;column-gap:8px;padding:12px 14px;margin-bottom:8px;flex-wrap:nowrap}
+#list .song .t{grid-column:1;min-width:0}
+#list .song [data-a="bpm"]{grid-column:2}#list .song [data-a="ch"]{grid-column:3}#list .song .st{grid-column:4}#list .song [data-a="del"]{grid-column:5}
+#list .song .btn,#list .song .st{height:var(--h-ctl);padding:0 12px;display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;line-height:1;white-space:nowrap;width:100%}
+#list .song .st{text-transform:capitalize;font-weight:500}
+#list .song [data-a="del"]{padding:0}
+#list .song small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:560px){#list .song{grid-template-columns:repeat(4,minmax(0,1fr)) 34px}#list .song .t{grid-column:1/-1;margin-bottom:8px}#list .song [data-a="bpm"]{grid-column:1}#list .song [data-a="ch"]{grid-column:2}#list .song .st{grid-column:3/5}#list .song [data-a="del"]{grid-column:5}}
+/* lagu terbuka: header + kontrol + lembar chord menjadi satu panel; header menempel di atas */
+.sx{grid-column:1/-1;margin:0 0 12px;border:1px solid color-mix(in srgb,var(--brass) 38%,var(--line));border-radius:var(--r-l);background:var(--panel2)}
+.sx>.song.open{position:sticky;top:0;z-index:4;margin:0;border-radius:var(--r-l) var(--r-l) 0 0;border-bottom:1px solid var(--line);background:var(--panel2);box-shadow:0 8px 16px -10px rgba(0,0,0,.55)}
+.sx>.song.open:hover{transform:none}
+.sx>.chartbox{margin:0;border-radius:0 0 var(--r-l) var(--r-l);background:transparent;padding:14px}
+.ctlbar{display:flex;justify-content:space-between;align-items:center;margin:0 0 10px}
+.ctlbar .btn{height:30px;padding:0 12px}
+/* grup kontrol: ubin seragam, tinggi baris sama */
+.chartctl{gap:10px;grid-auto-rows:1fr}
+.chartctl .cg{padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-m);background:color-mix(in srgb,var(--panel) 60%,transparent);align-content:start;gap:10px}
+.chartctl .cg.wide{grid-auto-rows:auto}
+.chartctl .btn.sm{height:var(--h-ctl);padding:0 12px;display:inline-flex;align-items:center;justify-content:center;font-size:.85rem;line-height:1}
+.chartctl .kgrid .btn{padding:0}
+.crow{min-height:var(--h-ctl);gap:6px}
+.crow label{margin:0 2px 0 8px;line-height:var(--h-ctl)}
+.crow .asr{height:var(--h-ctl);margin:0}
+@media (min-width:820px){.chartctl{gap:12px}}
+/* lembar chord: bagian aktif seimbang, 2 kolom memakai grid (tinggi baris sama) */
+.chartbox pre.chart{padding:0;border-radius:var(--r-m)}
+pre.chart .sc{padding:14px 18px 8px}
+@media (min-width:460px){
+pre.chart.c2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-count:auto;column-gap:0;column-rule:0;align-items:stretch;position:relative}
+pre.chart.c2 .sc.pre,pre.chart.c2 .medh{grid-column:1/-1}
+.chartbox pre.chart.c2::before{content:"";position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--line);pointer-events:none}
+}
+/* dock navigasi bagian: memudar ke latar, tidak lagi menimpa teks */
+.chartbox:has(.snav)::after{content:none;display:none}
+.sdock{position:sticky;bottom:0;z-index:3;margin:0 -14px -14px;padding:26px 14px 14px;background:linear-gradient(transparent,var(--panel2) 60%);pointer-events:none;border-radius:0 0 var(--r-l) var(--r-l)}
+.sdock .snav{position:static;margin:0 auto;pointer-events:auto;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+#pvnav .sdock{position:static;margin:0;padding:0;background:none;pointer-events:none}
+.snav{padding:4px;gap:6px}
+.snav .sn,.spills button{height:30px}.snav .sn{width:30px;flex-basis:30px}
+.spills button{display:inline-flex;align-items:center}
+.snav .sn:focus-visible,.spills button:focus-visible{outline-offset:1px}

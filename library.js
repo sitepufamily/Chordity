@@ -12,7 +12,7 @@ function tline(l,d){return isCh(l)?l.replace(/[A-G][#b]?/g,m=>tr1(m,d)):l}
 function baseKey(s){const m=(s.k||'').match(/^([A-G][#b]?)/);if(m)return SH.indexOf(FL[m[1]]||m[1]);for(const l of (s.x||'').split('\n'))if(isCh(l)){const r=l.match(/[A-G][#b]?/);if(r)return SH.indexOf(FL[r[0]]||r[0])}return 0}
 /* Modulasi per bagian: s.md = {indeksBagian:{d:semiton,t:'teks penanda'}}.
    d relatif terhadap nada lagu yang sedang tampil; teks penanda dicocokkan agar aman setelah chord diedit. */
-let showMod=false;
+let showMod=false,ctlOpen=store.get('rl-ctl',true);
 const secList=s=>(s.x||'').split('\n').map(r=>r.trim()).filter(t=>t&&SEC.test(t));
 const secMod=(s,i,t)=>{const m=s.md&&s.md[i];return m&&m.t===t?(m.d|0):0};
 function setMod(s,i,t,d){d=((d%12)+12)%12;if(d>6)d-=12;const md=Object.assign({},s.md);if(d)md[i]={d,t};else delete md[i];if(Object.keys(md).length)s.md=md;else delete s.md}
@@ -52,9 +52,9 @@ cl();flat=f0;return O.join('')}
 /* Navigasi per bagian: pil di bawah, bagian aktif mengikuti gulir (atau ketukan pil) */
 let secRaf=0,secLock=0;
 function secNav(s,cap){const L=secList(s);if(L.length<2)return'';const at=i=>' data-id="'+s.id+'" data-i="'+i+'"';
-return'<div class="snav"><button class="sn" type="button" data-a="sn" data-id="'+s.id+'" data-d="-1" aria-label="Bagian sebelumnya">‹</button><div class="spills">'
+return'<div class="sdock"><div class="snav"><button class="sn" type="button" data-a="sn" data-id="'+s.id+'" data-d="-1" aria-label="Bagian sebelumnya">‹</button><div class="spills">'
 +L.map((t,i)=>'<button type="button" data-a="sj"'+at(i)+(i===0?' class="on"':'')+'>'+esc(secName(t))+'</button>').join('')
-+'</div><button class="sn" type="button" data-a="sn" data-id="'+s.id+'" data-d="1" aria-label="Bagian berikutnya">›</button></div>'+(cap?'<div class="scap">Chordity · Per Section</div>':'')}
++'</div><button class="sn" type="button" data-a="sn" data-id="'+s.id+'" data-d="1" aria-label="Bagian berikutnya">›</button></div></div>'+(cap?'<div class="scap">Chordity · Per Section</div>':'')}
 const chartRoot=()=>pvId?$('pvpre'):document.querySelector('#list .chartbox pre.chart');
 function scroller(el){for(let p=el.parentElement;p;p=p.parentElement){const o=getComputedStyle(p).overflowY;if((o==='auto'||o==='scroll')&&p.scrollHeight>p.clientHeight)return p}return document.scrollingElement}
 const secCards=r=>[...r.querySelectorAll('.sc[data-si]')];
@@ -68,8 +68,11 @@ let i=+b.dataset.i;if(b.dataset.a==='sn')i=secCur(r)+ +b.dataset.d;i=Math.max(0,
 const sc=scroller(r),top=cs[i].getBoundingClientRect().top-sc.getBoundingClientRect().top+sc.scrollTop-(pvId?$('pvbar').offsetHeight:0)-8;
 secLock=Date.now()+700;sc.scrollTo({top,behavior:'smooth'});secMark(r,i)}
 function secScan(){if(Date.now()<secLock)return;const r=chartRoot();if(!r)return;const cs=secCards(r);if(!cs.length)return;
-const sc=scroller(r),b=sc.getBoundingClientRect(),ref=b.top+(pvId?$('pvbar').offsetHeight:0)+24;let k=0;
-cs.forEach((c,i)=>{if(c.getBoundingClientRect().top<=ref)k=i});if(k!==secCur(r)||!cs[k].classList.contains('on'))secMark(r,k)}
+const sc=scroller(r),b=sc.getBoundingClientRect(),ref=b.top+(pvId?$('pvbar').offsetHeight:0)+24,tp=cs.map(c=>c.getBoundingClientRect().top);let k=0;
+tp.forEach((t,i)=>{if(t<=ref)k=i});
+const cur=secCur(r),row=tp.map((t,i)=>i).filter(i=>Math.abs(tp[i]-tp[k])<4),end=sc.scrollTop+sc.clientHeight>=sc.scrollHeight-2;
+if(row.includes(cur))k=cur;else if(end&&tp[cur]>=ref-4)k=cur;else k=row[0];
+if(k!==cur||!cs[k].classList.contains('on'))secMark(r,k)}
 document.addEventListener('scroll',()=>{if(secRaf)return;secRaf=requestAnimationFrame(()=>{secRaf=0;secScan()})},true);
 function editBox(s){return '<div class="chartbox"><textarea id="ex" aria-label="Edit chord">'+esc(s.x||'')+'</textarea><div class="row" style="justify-content:flex-start;margin:6px 0 0"><button class="btn sm main" data-a="sv" data-id="'+s.id+'">Simpan</button><button class="btn sm" data-a="cx" data-id="'+s.id+'">Batal</button></div></div>'}
 function chartBox(s){if(editSong===s.id)return editBox(s);
@@ -79,7 +82,7 @@ P=(a,t,on)=>B(a,t,' aria-pressed="'+on+'"'),
 G=(l,h,w)=>'<div class="cg'+(w?' wide':'')+'"><span class="cgl">'+l+'</span>'+h+'</div>',
 keys=KL.map((k,i)=>'<button class="btn sm" data-a="key" data-k="'+i+'"'+id+' aria-pressed="'+(cu===i)+'">'+k+'</button>').join(''),
 modHint=!showMod?'':!s.x?'':hasSec?'<p class="chint">Ketuk − / + atau pilih nada pada penanda bagian di bawah. “↧ Lanjut” menyamakan semua bagian sesudahnya.</p>':'<p class="chint">Belum ada penanda bagian. Tekan Edit lalu tulis penanda di barisnya sendiri, mis. [Verse], [Chorus], atau Bridge, agar tiap bagian bisa punya nada sendiri.</p>';
-return '<div class="chartbox"><div class="chartctl">'
+return '<div class="chartbox"><div class="ctlbar"><span class="cgl">Kontrol lagu</span><button class="btn sm" data-a="ctl"'+id+' aria-expanded="'+ctlOpen+'">'+(ctlOpen?'Sembunyikan':'Tampilkan')+'</button></div><div class="chartctl"'+(ctlOpen?'':' hidden')+'>'
 +G('Nada dasar','<div class="kgrid">'+keys+'</div><div class="crow">'+B('tr','Lebih rendah',' data-d="-1"')+B('tr','Lebih tinggi',' data-d="1"')+(trans?B('perm','Simpan nada ini'):'')+'</div>',1)
 +G('Modulasi per bagian','<div class="crow">'+P('mod','Atur nada tiap bagian'+(n?' · '+n:''),showMod)+(n?B('mclr','Hapus semua modulasi'):'')+'</div>'+modHint)
 +G('Tampilan','<div class="crow">'+B('fs','A\u2212',' data-d="-1"')+B('fs','A+',' data-d="1"')+P('tc','Chord',showC)+P('tl','Lirik',showL)+P('cols','2 Kolom',cols2)+'</div>')
@@ -93,13 +96,14 @@ const SEEDS=[
 const SEED_JSON=JSON.stringify(SEEDS);
 let songs=store.get('songs',SEEDS);
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-function renderSongs(){store.set('songs',songs);$('list').innerHTML=songs.length?songs.map(s=>'<div class="song"><div class="t"><b>'+esc(s.t)+'</b><small>'+esc([s.c,s.k].filter(Boolean).join(', '))+'</small></div>'+
+function renderSongs(){store.set('songs',songs);$('list').innerHTML=songs.length?songs.map(s=>(openSong===s.id?'<div class="sx"><div class="song open">':'<div class="song">')+'<div class="t"><b>'+esc(s.t)+'</b><small>'+esc([s.c,s.k].filter(Boolean).join(', '))+'</small></div>'+
 (s.b?'<button class="btn sm" data-a="bpm" data-id="'+s.id+'" title="Pakai tempo ini di metronom">'+s.b+' BPM</button>':'')+
-'<button class="btn sm" data-a="ch" data-id="'+s.id+'">Chord</button>'+'<button class="st '+s.s+'" data-a="st" data-id="'+s.id+'">'+s.s+'</button><button class="btn sm" data-a="del" data-id="'+s.id+'" aria-label="Hapus">✕</button></div>'+(openSong===s.id?chartBox(s):'')).join(''):'<div class="empty">Belum ada lagu. Tambahkan lagu pertamamu di bawah.</div>';requestAnimationFrame(secScan)}
+'<button class="btn sm" data-a="ch" data-id="'+s.id+'">Chord</button>'+'<button class="st '+s.s+'" data-a="st" data-id="'+s.id+'">'+s.s+'</button><button class="btn sm" data-a="del" data-id="'+s.id+'" aria-label="Hapus">✕</button></div>'+(openSong===s.id?chartBox(s)+'</div>':'')).join(''):'<div class="empty">Belum ada lagu. Tambahkan lagu pertamamu di bawah.</div>';requestAnimationFrame(secScan)}
 $('list').onclick=e=>{const b=e.target.closest('button');if(!b)return;const id=+b.dataset.id,s=songs.find(x=>x.id===id);if(!s)return;
 if(b.dataset.a==='sn'||b.dataset.a==='sj'){secGo(b);return}
 if(modAct(s,b)){renderSongs();return}
 if(b.dataset.a==='mod'){showMod=!showMod;renderSongs();return}
+if(b.dataset.a==='ctl'){ctlOpen=!ctlOpen;store.set('rl-ctl',ctlOpen);renderSongs();return}
 if(b.dataset.a==='del')songs=songs.filter(x=>x.id!==id);
 if(b.dataset.a==='st')s.s=ST[(ST.indexOf(s.s)+1)%3];
 if(b.dataset.a==='ch'){openSong=openSong===id?0:id;trans=0;editSong=0;renderSongs();return}
