@@ -57,7 +57,7 @@ return'<div class="sdock"><div class="snav"><button class="sn" type="button" dat
 +'</div><button class="sn" type="button" data-a="sn" data-id="'+s.id+'" data-d="1" aria-label="Bagian berikutnya">›</button></div></div>'+(cap?'<div class="scap">Chordity · Per Section</div>':'')}
 const chartRoot=()=>pvId?$('pvpre'):document.querySelector('#list .chartbox pre.chart');
 function scroller(el){for(let p=el.parentElement;p;p=p.parentElement){const o=getComputedStyle(p).overflowY;if((o==='auto'||o==='scroll')&&p.scrollHeight>p.clientHeight)return p}return document.scrollingElement}
-const secOff=()=>pvId?$('pvbar').offsetHeight:0;
+const secOff=()=>0;
 const secCards=r=>[...r.querySelectorAll('.sc[data-si]')];
 const secCur=r=>Math.max(0,secCards(r).findIndex(c=>c.classList.contains('on')));
 function secMark(r,i){secCards(r).forEach((c,k)=>c.classList.toggle('on',k===i));
@@ -222,8 +222,9 @@ function renderPvMed(){const m=medOf(pvId),ss=m?m.s.map(id=>songs.find(x=>x.id==
 const i=pvList.indexOf(pvId),B=(a,t,x)=>'<button class="btn sm" data-a="'+a+'"'+(x||'')+'>'+t+'</button>';
 const keys=KL.map((n,k)=>'<button class="btn sm" data-a="mkey" data-k="'+k+'" aria-pressed="'+(m.k===k)+'">'+n+'</button>').join('');
 const jumps=ss.map((s,j)=>B('jump',(j+1)+'. '+esc(s.t),' data-i="'+j+'"')).join('');
-$('pvbar').innerHTML='<div class="row" style="justify-content:space-between;margin:0 0 6px"><b>Medley · '+esc(medName(m))+'</b>'+B('x','Tutup')+'</div><div class="chips" style="justify-content:flex-start;margin-bottom:6px">'+keys+'</div><div class="row jmp" style="justify-content:flex-start;margin:0 0 6px">'+jumps+'</div><div class="row" style="justify-content:flex-start;margin:0">'+(pvList.length>1?B('pn','Sebelumnya',' data-d="-1"'+(i<1?' disabled':''))+B('pn','Berikutnya',' data-d="1"'+(i>=pvList.length-1?' disabled':'')):'')+B('fs','A\u2212',' data-d="-1"')+B('fs','A+',' data-d="1"')+'<button class="btn sm" data-a="tc" aria-pressed="'+showC+'">Chord</button><button class="btn sm" data-a="tl" aria-pressed="'+showL+'">Lirik</button><button class="btn sm" data-a="cols" aria-pressed="'+cols2+'">2 Kolom</button><button class="btn sm" data-a="as" aria-pressed="'+asOn+'">'+(asOn?'Stop scroll':'Auto scroll')+'</button><input type="range" class="asr" min="1" max="12" value="'+asSpeed+'" style="width:110px" aria-label="Kecepatan auto scroll"></div>';
-$('pvpre').className='chart'+(cols2?' c2':'');$('pvpre').style.fontSize=pvFs+'px';$('pvpre').innerHTML=medHtml(m,ss);$('pvnav').innerHTML='';requestAnimationFrame(secScan)}
+const drm='<div class="cg wide"><span class="cgl">Nada dasar medley</span><div class="kgrid">'+keys+'</div></div><div class="cg wide"><span class="cgl">Lompat ke lagu</span><div class="row jmp" style="justify-content:flex-start;margin:0">'+jumps+'</div></div>';
+$('pvbar').innerHTML=pvBar('Medley',medName(m),KL[m.k],drm);
+$('pvpre').className='chart'+(fitOn?' fit':'');$('pvpre').style.fontSize=pvFs+'px';$('pvpre').innerHTML=medHtml(m,ss);$('pvnav').innerHTML='';requestAnimationFrame(secScan)}
 /* Popup medley: pilih lagu, nada dasar langsung ikut diatur */
 let mdS=[],mdK=0,mdKt=false,mdEdit=null,mdQ='';
 function openMd(m){const e=cur();if(!e)return;mdEdit=m?m.m:null;mdS=m?m.s.slice():[];mdK=m?m.k:0;mdKt=!!m;mdQ='';$('md').hidden=false;document.body.style.overflow='hidden';
@@ -287,21 +288,33 @@ $('evaddb').onclick=()=>{const v=+$('evadd').value;if(v){cur().s.push(v);renderE
 /* Auto scroll & Presenter */
 function setAS(on){asOn=on;asRun++;document.querySelectorAll('[data-a="as"]').forEach(b=>{b.setAttribute('aria-pressed',on);b.textContent=on?'Stop scroll':'Auto scroll'});if(on){asLast=performance.now();asAcc=0;const g=asRun;requestAnimationFrame(t=>asLoop(t,g))}}
 function asLoop(t,g){if(!asOn||g!==asRun)return;asAcc+=asSpeed*8*(t-asLast)/1000;asLast=t;const px=Math.floor(asAcc);
-if(px>0){asAcc-=px;if(pvId){const el=$('pv');el.scrollTop+=px;if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)return setAS(false)}else{const el=(curTab==='perpustakaan'&&document.querySelector('#list .sheet'))||$(curTab);el.scrollTop+=px;if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)return setAS(false)}}
+if(px>0){asAcc-=px;if(pvId){const el=$('pvsheet');el.scrollTop+=px;if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)return setAS(false)}else{const el=(curTab==='perpustakaan'&&document.querySelector('#list .sheet'))||$(curTab);el.scrollTop+=px;if(el.scrollTop+el.clientHeight>=el.scrollHeight-2)return setAS(false)}}
 requestAnimationFrame(t2=>asLoop(t2,g))}
 document.addEventListener('input',e=>{if(e.target.classList.contains('asr')){asSpeed=+e.target.value;document.querySelectorAll('.asr').forEach(x=>x.value=asSpeed)}});
+let pvDr=false;
+function pvBar(title,sub,keyLbl,dr){const i=pvList.indexOf(pvId),B=(a,t,x)=>'<button class="btn sm" data-a="'+a+'"'+(x||'')+'>'+t+'</button>',P=(a,t,on)=>B(a,t,' aria-pressed="'+on+'"'),
+G=(l,h,w)=>'<div class="cg'+(w?' wide':'')+'"><span class="cgl">'+l+'</span>'+h+'</div>';
+const nav=pvList.length>1?'<div class="tg pvn">'+B('pn','\u2039',' data-d="-1" aria-label="Sebelumnya"'+(i<1?' disabled':''))+'<span class="pvc">'+(i+1)+' / '+pvList.length+'</span>'+B('pn','\u203a',' data-d="1" aria-label="Berikutnya"'+(i>=pvList.length-1?' disabled':''))+'</div>':'';
+const cols=G('Kolom','<div class="crow">'+[0,1,2,3,4].map(k=>B('cn',k?k:'Otomatis',' data-n="'+k+'" aria-pressed="'+(colN===k)+'"')).join('')+'</div><p class="chint">'+(fitOn?'Muat layar aktif: font dibesarkan otomatis sampai seluruh lagu muat.':'Muat layar nonaktif: lagu menggulir dalam kolom pilihan Anda.')+'</p>');
+return '<div class="tools">'+B('x','\u2039 Tutup',' title="Tutup presenter (Esc)"').replace('btn sm','btn sm back')+'<div class="ttl"><b>'+esc(title)+'</b><small>'+esc(sub)+'</small></div>'+nav
++'<div class="tg" role="group" aria-label="Tampilan">'+(fitOn?'':B('fs','A\u2212',' data-d="-1"')+B('fs','A+',' data-d="1"'))+P('tc','Chord',showC)+P('tl','Lirik',showL)+P('fit','Muat layar',fitOn)+'</div>'
++'<div class="tg" role="group" aria-label="Auto scroll">'+P('as',asOn?'Stop scroll':'Auto scroll',asOn)+'<input type="range" class="asr" min="1" max="12" value="'+asSpeed+'" aria-label="Kecepatan auto scroll" title="Kecepatan"></div>'
++'<button class="btn sm more" data-a="dr" aria-expanded="'+pvDr+'">Nada '+keyLbl+' '+(pvDr?'\u25b4':'\u25be')+'</button>'+B('fsc','\u2922',' aria-label="Layar penuh" title="Layar penuh"')+'</div>'
++'<div class="chartctl drawer"'+(pvDr?'':' hidden')+'>'+dr+cols+'</div>'}
 function renderPv(){if(typeof pvId==='string'){renderPvMed();return}const s=songs.find(x=>x.id===pvId);if(!s){closePv();return}
 const cu=(baseKey(s)+trans+1200)%12;flat=FLATK.includes(cu);const i=pvList.indexOf(pvId),B=(a,t,x)=>'<button class="btn sm" data-a="'+a+'"'+(x||'')+'>'+t+'</button>';
 const keys=KL.map((n,k)=>'<button class="btn sm" data-a="key" data-k="'+k+'" aria-pressed="'+(cu===k)+'">'+n+'</button>').join('');
-$('pvbar').innerHTML='<div class="row" style="justify-content:space-between;margin:0 0 6px"><b>'+esc(s.t)+'</b>'+B('x','Tutup')+'</div><div class="chips" style="justify-content:flex-start;margin-bottom:6px">'+keys+'</div><div class="row" style="justify-content:flex-start;margin:0">'+(pvList.length>1?B('pn','Sebelumnya',' data-d="-1"'+(i<1?' disabled':''))+B('pn','Berikutnya',' data-d="1"'+(i>=pvList.length-1?' disabled':'')):'')+B('tr','Lebih rendah',' data-d="-1"')+B('tr','Lebih tinggi',' data-d="1"')+B('mod','Modulasi',' aria-pressed="'+showMod+'"')+B('fs','A\u2212',' data-d="-1"')+B('fs','A+',' data-d="1"')+'<button class="btn sm" data-a="tc" aria-pressed="'+showC+'">Chord</button><button class="btn sm" data-a="tl" aria-pressed="'+showL+'">Lirik</button><button class="btn sm" data-a="cols" aria-pressed="'+cols2+'">2 Kolom</button><button class="btn sm" data-a="as" aria-pressed="'+asOn+'">'+(asOn?'Stop scroll':'Auto scroll')+'</button><input type="range" class="asr" min="1" max="12" value="'+asSpeed+'" style="width:110px" aria-label="Kecepatan auto scroll"></div>';
-$('pvpre').className='chart'+(cols2?' c2':'');$('pvpre').style.fontSize=pvFs+'px';$('pvpre').innerHTML=s.x?sheetHtml(s,showMod):'Belum ada chord untuk lagu ini.';$('pvnav').innerHTML=s.x?secNav(s,1):'';requestAnimationFrame(secScan)}
-function openPv(id,list){pvId=id;pvList=list&&list.length?list:[id];setAS(false);$('pv').hidden=false;document.body.style.overflow='hidden';renderPv();$('pv').scrollTop=0;try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>wl=w).catch(()=>{})}catch(e){}}
+const dr=(function(){const Bx=(a,t,x)=>'<button class="btn sm" data-a="'+a+'"'+(x||'')+'>'+t+'</button>';
+return '<div class="cg wide"><span class="cgl">Nada dasar</span><div class="kgrid">'+keys+'</div><div class="crow">'+Bx('tr','Lebih rendah',' data-d="-1"')+Bx('tr','Lebih tinggi',' data-d="1"')+'</div></div><div class="cg"><span class="cgl">Modulasi per bagian</span><div class="crow">'+Bx('mod','Atur nada tiap bagian',' aria-pressed="'+showMod+'"')+'</div></div>'})();
+$('pvbar').innerHTML=pvBar(s.t,[s.c,'nada asli '+KL[baseKey(s)]].filter(Boolean).join(' · '),KL[cu],dr);
+$('pvpre').className='chart'+(fitOn?' fit':'');$('pvpre').style.fontSize=pvFs+'px';$('pvpre').innerHTML=s.x?sheetHtml(s,showMod):'Belum ada chord untuk lagu ini.';$('pvnav').innerHTML=s.x?secNav(s,1):'';requestAnimationFrame(secScan)}
+function openPv(id,list){pvId=id;pvList=list&&list.length?list:[id];setAS(false);$('pv').hidden=false;document.body.style.overflow='hidden';renderPv();$('pvsheet').scrollTop=0;try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>wl=w).catch(()=>{})}catch(e){}}
 function closePv(){pvId=0;$('pv').hidden=true;document.body.style.overflow='';setAS(false);try{wl&&wl.release();wl=null}catch(e){}renderSongs();renderEv()}
 $('pv').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.dataset.a,med=typeof pvId==='string'?medOf(pvId):null,s=songs.find(x=>x.id===pvId);if(!s&&!med)return;
 if(a==='x'){closePv();return}
 if(a==='sn'||a==='sj'){secGo(b);return}
 if(a==='as'){setAS(!asOn);return}
-if(a==='jump'){const el=$('mh'+b.dataset.i),pv=$('pv');if(el)pv.scrollTo({top:el.getBoundingClientRect().top-pv.getBoundingClientRect().top+pv.scrollTop-$('pvbar').offsetHeight-6,behavior:'smooth'});return}
+if(a==='jump'){const el=$('mh'+b.dataset.i),pv=$('pvsheet');if(el)pv.scrollTo({top:el.getBoundingClientRect().top-pv.getBoundingClientRect().top+pv.scrollTop-6,behavior:'smooth'});return}
 if(a==='mkey'&&med){med.k=+b.dataset.k;saveEv()}
 if(a==='mod')showMod=!showMod;
 if(s&&modAct(s,b))store.set('songs',songs);
@@ -311,7 +324,11 @@ if(a==='fs')pvFs=Math.max(14,Math.min(60,pvFs+2*(+b.dataset.d)));
 if(a==='tc')showC=!showC;
 if(a==='tl')showL=!showL;
 if(a==='cols'){cols2=!cols2;store.set('rl-cols',cols2)}
-if(a==='pn'){const j=pvList.indexOf(pvId)+ +b.dataset.d;if(pvList[j]){pvId=pvList[j];trans=0;$('pv').scrollTop=0}}
+if(a==='fit'){fitOn=!fitOn;store.set('rl-fit',fitOn)}
+if(a==='cn'){colN=+b.dataset.n||0;store.set('rl-coln',colN)}
+if(a==='dr')pvDr=!pvDr;
+if(a==='fsc'){const d=document;d.fullscreenElement?d.exitFullscreen():d.documentElement.requestFullscreen().catch(()=>{});return}
+if(a==='pn'){const j=pvList.indexOf(pvId)+ +b.dataset.d;if(pvList[j]){pvId=pvList[j];trans=0;$('pvsheet').scrollTop=0}}
 renderPv()};
 $('pv').onchange=e=>{const el=e.target;if(el.dataset&&el.dataset.a==='msel'&&typeof pvId==='number'&&modSel(el)){store.set('songs',songs);renderPv()}};
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('md').hidden)closeMd();else if(pvId)closePv()});
@@ -321,26 +338,30 @@ $('evmd').onclick=()=>openMd(null);
 
 /* ===== v29: Muat layar — font & jumlah kolom dihitung otomatis agar seluruh lagu muat tanpa scroll ===== */
 let fitQ=0,wasFocus=false;
-function fitSheet(){
-const sh=document.querySelector('#list .sheet'),foc=!!document.querySelector('#list .sx');
-if(wasFocus&&!foc&&typeof movePill==='function')requestAnimationFrame(()=>{try{movePill(curTab,true)}catch(e){}});
-wasFocus=foc;
-if(!sh)return;const pre=sh.firstElementChild;if(!pre||!pre.classList.contains('chart'))return;
+function fitOne(sh,pre,fsz,hi,lo){
 const H=sh.clientHeight,W=sh.clientWidth;
-const grid=()=>{const n=colN||(W>=640?2:1);pre.classList.remove('fit','c2');pre.classList.toggle('cg',n>1);pre.style.setProperty('--cn',n);pre.style.height='';pre.style.columnCount='';pre.style.fontSize=fs+'px';sh.classList.remove('fitted')};
+const grid=()=>{const n=colN||(W>=(hi>22?900:640)?2:1);pre.classList.remove('fit','c2');pre.classList.toggle('cg',n>1);pre.style.setProperty('--cn',n);pre.style.height='';pre.style.columnCount='';pre.style.fontSize=fsz+'px';sh.classList.remove('fitted')};
 if(!fitOn){grid();return}
 if(!H||!W)return;
 pre.classList.remove('cg','c2');pre.classList.add('fit');pre.style.height=H+'px';
 const maxN=Math.max(1,Math.min(4,Math.floor(W/340))),list=colN?[colN]:Array.from({length:maxN},(_,i)=>i+1);let best=null;
 for(const n of list){pre.style.columnCount=n;
 const fits=f=>{pre.style.fontSize=f+'px';return pre.scrollWidth<=pre.clientWidth+1};
-let lo=11,hi=22;if(!fits(lo))continue;
-while(lo<hi){const m=Math.ceil((lo+hi)/2);if(fits(m))lo=m;else hi=m-1}
-if(!best||lo>best.f)best={n,f:lo}}
+let a=lo,b=hi;if(!fits(a))continue;
+while(a<b){const m=Math.ceil((a+b)/2);if(fits(m))a=m;else b=m-1}
+if(!best||a>best.f)best={n,f:a}}
 if(best){pre.style.columnCount=best.n;pre.style.fontSize=best.f+'px';sh.classList.add('fitted')}else grid()}
+function fitSheet(){
+const foc=!!document.querySelector('#list .sx');
+if(wasFocus&&!foc&&typeof movePill==='function')requestAnimationFrame(()=>{try{movePill(curTab,true)}catch(e){}});
+wasFocus=foc;
+const sh=document.querySelector('#list .sheet'),pre=sh&&sh.firstElementChild;
+if(pre&&pre.classList.contains('chart'))fitOne(sh,pre,fs,22,11);
+if(!$('pv').hidden)fitOne($('pvsheet'),$('pvpre'),pvFs,40,12)}
 function fitSoon(){if(fitQ)return;fitQ=requestAnimationFrame(()=>{fitQ=0;fitSheet()})}
 new MutationObserver(()=>fitSheet()).observe($('list'),{childList:true});
+new MutationObserver(()=>fitSheet()).observe($('pvpre'),{childList:true});
 window.addEventListener('resize',fitSoon);
-if(window.ResizeObserver)new ResizeObserver(fitSoon).observe($('perpustakaan'));
+if(window.ResizeObserver){new ResizeObserver(fitSoon).observe($('perpustakaan'));new ResizeObserver(fitSoon).observe($('pv'))}
 document.addEventListener('fullscreenchange',fitSoon);
 fitSheet();

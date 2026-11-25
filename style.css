@@ -501,3 +501,58 @@ background-image:repeating-linear-gradient(to right,transparent 0,transparent ca
 .chartbox.edit textarea{flex:1 1 auto;min-height:0;height:auto;width:100%;box-sizing:border-box;resize:none;border:0;border-radius:0;background:var(--panel);padding:16px 20px;font:15px/1.65 ui-monospace,Menlo,Consolas,monospace;white-space:pre;overflow:auto;tab-size:4;outline:0;scrollbar-width:thin}
 .chartbox.edit textarea:focus{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--brass) 55%,transparent)}
 @media (max-width:640px){.edhint{display:none}.edtop .ttl small{display:none}}
+
+/* ===== v32: Presenter view & Acara memakai sistem yang sama dengan Lagu ===== */
+/* presenter: kolom flex — toolbar · (laci) · area chord · nav bagian; hanya area chord yang menggulir */
+#pv:not([hidden]){display:flex;flex-direction:column;overflow:hidden}
+#pv #pvbar{position:static;flex:none;padding:0;background:none;border:0}
+#pv .tools{padding:10px 14px}
+#pv .drawer.chartctl{max-height:46vh}
+#pv .sheet{background:var(--bg)}
+#pv .sheet #pvpre{max-width:none;margin:0;padding:0;width:100%;min-height:100%}
+#pv .sheet.fitted #pvpre{min-height:0}
+#pv #pvnav{position:static;flex:none;padding:8px 12px calc(env(safe-area-inset-bottom,0px) + 8px);background:var(--panel2);border-top:1px solid var(--line);pointer-events:auto}
+#pv #pvnav:empty,#pv .sheet.fitted~#pvnav{display:none}
+#pv .sc{padding-left:18px;padding-right:18px}
+.pvn{gap:4px;padding-right:10px}.pvn .btn{width:var(--h-ctl);padding:0;font-size:1.05rem}
+.pvc{min-width:3.6em;text-align:center;font-size:.8rem;color:var(--mute);font-variant-numeric:tabular-nums}
+.sheet pre.chart.fit .medh{column-span:none;margin:10px 0 4px}
+@media print{#pv{display:none!important}}
+
+/* daftar susunan acara: kolom aksi lebar tetap supaya sejajar antar baris */
+@media (min-width:561px){
+#evlist .song{display:grid;grid-template-columns:28px minmax(0,1fr) 84px 64px 34px 34px 34px;align-items:center;column-gap:8px;padding:10px 14px;margin-bottom:8px}
+#evlist .song>span{grid-column:1;text-align:right;color:var(--mute);font-variant-numeric:tabular-nums}
+#evlist .song .t{grid-column:2;min-width:0}
+#evlist .song [data-a="ch"]{grid-column:3}#evlist .song [data-a="atur"]{grid-column:4}
+#evlist .song [data-a="up"]{grid-column:5}#evlist .song [data-a="dn"]{grid-column:6}#evlist .song [data-a="rm"]{grid-column:7}
+}
+#evlist .song .btn{height:34px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;width:100%;font-size:.85rem;line-height:1;white-space:nowrap}
+#evlist .song small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#evlist .song b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:560px){
+#evlist .song{display:grid;grid-template-columns:24px repeat(5,minmax(0,1fr));align-items:center;gap:8px 6px;padding:10px 12px;margin-bottom:8px}
+#evlist .song>span{grid-column:1;text-align:right;color:var(--mute)}
+#evlist .song .t{grid-column:2/-1;min-width:0}
+#evlist .song .btn:first-of-type{grid-column:2}
+}
+
+/* Acara di layar lebar: toolbar atas · susunan (menggulir sendiri) · panel aksi di kanan */
+@media (min-width:820px){
+section#acara.two{padding:0;overflow:hidden;align-items:stretch;align-content:stretch;column-gap:0;row-gap:0;grid-template-columns:minmax(0,1fr) 300px;grid-template-rows:auto minmax(0,1fr);grid-template-areas:"a a" "b c"}
+#acara>.pa{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;padding:12px 16px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--panel2) 70%,transparent)}
+#acara .pa .row{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;margin:0}
+#acara .pa .row:first-child{flex:1 1 420px}#acara .pa .row:last-child{flex:1 1 360px}
+#acara #ev{flex:1 1 160px;min-width:0}#acara #evname{flex:1 1 180px;min-width:0}#acara #evdate{flex:0 0 150px}
+#acara .pa select,#acara .pa input{height:38px;box-sizing:border-box}
+#acara .pa .btn{height:38px;padding:0 14px;display:inline-flex;align-items:center;white-space:nowrap}
+#acara>.pb{display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:0}
+#acara>.pb::before{content:"Susunan acara";flex:none;padding:12px 16px 8px;font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+#evlist{flex:1 1 auto;min-height:0;overflow-y:auto;padding:4px 16px 16px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+#acara>.pc{display:flex;flex-direction:column;gap:10px;min-height:0;overflow-y:auto;padding:16px;border-left:1px solid var(--line);background:color-mix(in srgb,var(--panel2) 55%,transparent)}
+#acara .pc .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:0}
+#acara .pc .row:first-child{grid-template-columns:1fr}
+#acara .pc .btn{height:38px;min-width:0;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
+#acara .pc select{height:38px;width:100%;box-sizing:border-box}
+#acara .pc .sub{margin:auto 0 0;font-size:.82rem}
+}
