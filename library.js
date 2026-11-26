@@ -37,7 +37,7 @@ if(a==='sclr'){setMod(s,i,t,0);return true}
 if(a==='sfwd'){const d=secMod(s,i,t);secList(s).forEach((x,j)=>{if(j>i)setMod(s,j,x,d)});return true}
 if(a==='mclr'){delete s.md;return true}
 return false}
-const modSel=el=>{const s=songs.find(x=>x.id===+el.dataset.id);if(s)setMod(s,+el.dataset.i,el.dataset.t,+el.value-(baseKey(s)+trans));return s};
+const modSel=(el,base)=>{const s=songs.find(x=>x.id===+el.dataset.id);if(s)setMod(s,+el.dataset.i,el.dataset.t,+el.value-(base!==undefined?base:baseKey(s)+trans));return s};
 /* v35: chord terikat ke suku kata. Baris chord + lirik dipecah per kata; saat layar sempit baris
    dibungkus per kata, sehingga chord tidak pernah terlepas dari liriknya. */
 const BARK=/^([|•·.:–-]+|x\d+)$/;
@@ -53,7 +53,7 @@ U.forEach(u=>{if(prevEnd&&g.length){G.push(g);g=[]}g.push(u);prevEnd=/\s$/.test(
 return '<div class="u pr">'+G.map(w=>'<span class="wd">'+w.map(u=>'<span class="sg">'+(u.c?'<span class="cl'+(BARK.test(u.c)?' bar':'')+'">'+esc(u.c)+'</span>':'')+'<span class="lt">'+(u.t?esc(u.t):'&#8203;')+'</span></span>').join('')+'</span>').join('')+'</div>'}
 function sheetHtml(s,ctl){const O=[],bk=baseKey(s),f0=flat;let si=-1,sd=0,hd='',bd=[],pc=null;
 const fp=()=>{if(pc!==null){if(showC)bd.push(chordRow(pc));pc=null}},
-cl=()=>{fp();if(hd||bd.length)O.push('<div class="sc'+(hd?(si===0&&ctl!==undefined?' on':''):' pre')+'"'+(hd?' data-si="'+si+'"':'')+'>'+hd+'<div class="sb">'+bd.join('')+'</div></div>');hd='';bd=[]};
+cl=()=>{fp();if(hd||bd.length)O.push('<div class="sc'+(hd?(si===0&&ctl!==undefined&&!inMed?' on':''):' pre')+'"'+(hd?' data-si="'+si+'"':'')+'>'+hd+'<div class="sb">'+bd.join('')+'</div></div>');hd='';bd=[]};
 (s.x||'').split('\n').forEach(raw=>{const t0=raw.trim();
 if(t0&&SEC.test(t0)){cl();si++;sd=secMod(s,si,t0);flat=sd?FLATK.includes((bk+trans+sd+1200)%12):f0;hd=secHead(s,si,t0,sd,bk,ctl);return}
 const l=tline(raw,trans+sd).replace(/\s+$/,''),t=l.trim();
@@ -73,7 +73,7 @@ function scroller(el){for(let p=el.parentElement;p;p=p.parentElement){const o=ge
 const secOff=()=>0;
 const secCards=r=>[...r.querySelectorAll('.sc[data-si]')];
 const secCur=r=>Math.max(0,secCards(r).findIndex(c=>c.classList.contains('on')));
-let medInfo=[];
+let medInfo=[],inMed=false;
 const medPills=j=>{const o=medInfo[j];return o?o.names.map((n,k)=>'<button type="button" data-a="sj" data-i="'+(o.off+k)+'">'+esc(n)+'</button>').join(''):''};
 function medDock(j){if(medInfo.reduce((a,x)=>a+x.names.length,0)<2)return'';
 return '<div class="sdock"><div class="snav" data-med="1" data-j="'+j+'"><button class="sn" type="button" data-a="sn" data-d="-1" aria-label="Bagian sebelumnya">\u2039</button><div class="spills">'+medPills(j)+'</div><button class="sn" type="button" data-a="sn" data-d="1" aria-label="Bagian berikutnya">\u203a</button></div></div>'}
@@ -238,14 +238,14 @@ function evIds(e){const r=[];e.s.forEach(x=>{if(isMed(x))r.push(...x.s);else r.p
 function medOf(id){const e=cur();return e?e.s.find(x=>isMed(x)&&x.m===id)||null:null}
 function medName(m){return m.s.map(id=>{const s=songs.find(x=>x.id===id);return s?s.t:''}).filter(Boolean).join(' → ')}
 function medShift(s,k){let d=(k-baseKey(s)+12)%12;if(d>6)d-=12;return d}
-function medHtml(m,ss){const out=ss.map((s,i)=>{const d=medShift(s,m.k);flat=FLATK.includes(m.k);trans=d;
-return '<div class="medh" id="mh'+i+'"><span class="sec">'+(i+1)+'. '+esc(s.t)+'</span><small>'+KL[baseKey(s)]+' → '+KL[m.k]+(d?' ('+(d>0?'+':'')+d+')':'')+'</small></div>'+(s.x?sheetHtml(s):'Belum ada chord untuk lagu ini.')}).join('');trans=0;return out}
+function medHtml(m,ss){inMed=true;const out=ss.map((s,i)=>{const d=medShift(s,m.k);flat=FLATK.includes(m.k);trans=d;
+return '<div class="medh" id="mh'+i+'"><span class="sec">'+(i+1)+'. '+esc(s.t)+'</span><small>'+KL[baseKey(s)]+' → '+KL[m.k]+(d?' ('+(d>0?'+':'')+d+')':'')+'</small></div>'+(s.x?sheetHtml(s,showMod):'Belum ada chord untuk lagu ini.')}).join('');inMed=false;trans=0;return out}
 function renderPvMed(){const m=medOf(pvId),ss=m?m.s.map(id=>songs.find(x=>x.id===id)).filter(Boolean):[];if(!m||!ss.length){closePv();return}
 const i=pvList.indexOf(pvId),B=(a,t,x)=>'<button class="btn sm" data-a="'+a+'"'+(x||'')+'>'+t+'</button>';
 const keys=KL.map((n,k)=>'<button class="btn sm" data-a="mkey" data-k="'+k+'" aria-pressed="'+(m.k===k)+'">'+n+'</button>').join('');
 let off=0;medInfo=ss.map((x,j)=>{const d=medShift(x,m.k),L=secList(x),o={t:(j+1)+'. '+x.t,sub:KL[baseKey(x)]+' \u2192 '+KL[m.k]+(d?' ('+(d>0?'+':'')+d+')':''),names:L.map(secName),off};off+=L.length;return o});
 const jumps=ss.map((s,j)=>B('jump',(j+1)+'. '+esc(s.t),' data-i="'+j+'"')).join('');
-const drm='<div class="cg wide"><span class="cgl">Nada dasar medley</span><div class="kgrid">'+keys+'</div></div>';
+const drm='<div class="cg wide"><span class="cgl">Nada dasar medley</span><div class="kgrid">'+keys+'</div></div><div class="cg"><span class="cgl">Modulasi per bagian</span><div class="crow">'+B('mod','Atur nada tiap bagian',' aria-pressed="'+showMod+'"')+'</div></div>';
 $('pvbar').innerHTML=pvBar(medInfo[0].t,medInfo[0].sub+' \u00b7 Medley',KL[m.k],drm);
 $('pvpre').className='chart'+(fitOn?' fit':'');$('pvpre').style.fontSize=pvFs+'px';$('pvpre').innerHTML=medHtml(m,ss);$('pvnav').innerHTML=medDock(0);requestAnimationFrame(secScan)}
 /* Popup medley: pilih lagu, nada dasar langsung ikut diatur */
@@ -288,7 +288,7 @@ $('ev').innerHTML=evs.map(x=>'<option value="'+x.id+'"'+(x.id===curEv?' selected
 $('evname').value=e.n;$('evdate').value=e.d;
 e.s=e.s.filter(x=>isMed(x)?(x.s=x.s.filter(id=>songs.some(y=>y.id===id))).length>0:songs.some(y=>y.id===x));
 const evBtn=i=>'<button class="btn sm" data-a="up" data-i="'+i+'" aria-label="Naik">▲</button><button class="btn sm" data-a="dn" data-i="'+i+'" aria-label="Turun">▼</button><button class="btn sm" data-a="rm" data-i="'+i+'" aria-label="Hapus dari draf">✕</button>';
-$('evlist').innerHTML=e.s.length?e.s.map((x,i)=>{if(isMed(x))return '<div class="song med"><span>'+(i+1)+'.</span><div class="t"><b>'+esc(medName(x))+'</b><small>Medley · '+x.s.length+' lagu · nada dasar '+KL[x.k]+'</small></div><button class="btn sm" data-a="ch" data-m="'+x.m+'">Chord</button><button class="btn sm" data-a="atur" data-m="'+x.m+'">Atur</button>'+evBtn(i)+'</div>';const s=songs.find(y=>y.id===x);return '<div class="song"><span>'+(i+1)+'.</span><div class="t"><b>'+esc(s.t)+'</b><small>'+esc([s.k,s.b?s.b+' BPM':''].filter(Boolean).join(', '))+'</small></div><button class="btn sm" data-a="ch" data-id="'+x+'">Chord</button>'+evBtn(i)+'</div>'}).join(''):'<div class="empty">Draf masih kosong. Pilih lagu dari perpustakaan di bawah.</div>';
+$('evlist').innerHTML=e.s.length?e.s.map((x,i)=>{if(isMed(x))return '<div class="song med"><span>'+(i+1)+'.</span><div class="t"><b>'+esc(medName(x))+'</b><small>Medley · '+x.s.length+' lagu · nada dasar '+KL[x.k]+'</small></div><button class="btn sm" data-a="ch" data-m="'+x.m+'">Chord</button><button class="btn sm" data-a="edt" data-m="'+x.m+'">Edit</button><button class="btn sm" data-a="atur" data-m="'+x.m+'">Atur</button>'+evBtn(i)+'</div>';const s=songs.find(y=>y.id===x);return '<div class="song"><span>'+(i+1)+'.</span><div class="t"><b>'+esc(s.t)+'</b><small>'+esc([s.k,s.b?s.b+' BPM':''].filter(Boolean).join(', '))+'</small></div><button class="btn sm" data-a="ch" data-id="'+x+'">Chord</button><button class="btn sm" data-a="edt" data-id="'+x+'">Edit</button>'+evBtn(i)+'</div>'}).join(''):'<div class="empty">Draf masih kosong. Pilih lagu dari perpustakaan di bawah.</div>';
 const rest=songs.filter(s=>!evIds(e).includes(s.id));
 $('evadd').innerHTML=rest.length?rest.map(s=>'<option value="'+s.id+'">'+esc(s.t)+'</option>').join(''):'<option value="">Semua lagu sudah masuk</option>';
 {const nm=e.s.filter(isMed).length;$('evsum').textContent=evIds(e).length+' lagu dalam draf'+(nm?' · '+nm+' medley':'')}
@@ -297,6 +297,7 @@ $('evlist').onclick=e=>{const b=e.target.closest('button');if(!b)return;const ev
 const lst=()=>ev.s.map(x=>isMed(x)?x.m:x);
 if(a==='ch'){trans=0;openPv(b.dataset.m||+b.dataset.id,lst());return}
 if(a==='atur'){const m=medOf(b.dataset.m);if(m)openMd(m);return}
+if(a==='edt'){const m=b.dataset.m?medOf(b.dataset.m):null;openEd(m?m.s:[+b.dataset.id]);return}
 if(a==='rm')ev.s.splice(i,1);
 if(a==='up'&&i>0)[ev.s[i-1],ev.s[i]]=[ev.s[i],ev.s[i-1]];
 if(a==='dn'&&i<ev.s.length-1)[ev.s[i+1],ev.s[i]]=[ev.s[i],ev.s[i+1]];
@@ -322,7 +323,7 @@ const cols=G('Kolom','<div class="crow">'+[0,1,2,3,4].map(k=>B('cn',k?k:'Otomati
 return '<div class="tools">'+B('x','\u2039 Tutup',' title="Tutup presenter (Esc)"').replace('btn sm','btn sm back')+'<div class="ttl"><b>'+esc(title)+'</b><small>'+esc(sub)+'</small></div>'+nav
 +'<div class="tg" role="group" aria-label="Tampilan">'+(fitOn?'':B('fs','A\u2212',' data-d="-1"')+B('fs','A+',' data-d="1"'))+P('tc','Chord',showC)+P('tl','Lirik',showL)+P('fit','Muat layar',fitOn)+'</div>'
 +'<div class="tg" role="group" aria-label="Auto scroll">'+P('as',asOn?'Stop scroll':'Auto scroll',asOn)+'<input type="range" class="asr" min="1" max="12" value="'+asSpeed+'" aria-label="Kecepatan auto scroll" title="Kecepatan"></div>'
-+'<button class="btn sm more" data-a="dr" aria-expanded="'+pvDr+'">Nada '+keyLbl+' '+(pvDr?'\u25b4':'\u25be')+'</button>'+B('fsc','\u2922',' aria-label="Layar penuh" title="Layar penuh"')+'</div>'
++B('edt','Edit',' title="Edit lirik &amp; chord"')+'<button class="btn sm more" data-a="dr" aria-expanded="'+pvDr+'">Nada '+keyLbl+' '+(pvDr?'\u25b4':'\u25be')+'</button>'+B('fsc','\u2922',' aria-label="Layar penuh" title="Layar penuh"')+'</div>'
 +'<div class="chartctl drawer"'+(pvDr?'':' hidden')+'>'+dr+cols+'</div>'}
 function renderPv(){if(typeof pvId==='string'){renderPvMed();return}const s=songs.find(x=>x.id===pvId);if(!s){closePv();return}
 const cu=(baseKey(s)+trans+1200)%12;flat=FLATK.includes(cu);const i=pvList.indexOf(pvId),B=(a,t,x)=>'<button class="btn sm" data-a="'+a+'"'+(x||'')+'>'+t+'</button>';
@@ -338,7 +339,9 @@ if(a==='x'){closePv();return}
 if(a==='sn'||a==='sj'){secGo(b);return}
 if(a==='as'){setAS(!asOn);return}
 if(a==='jump'){const el=$('mh'+b.dataset.i),pv=$('pvsheet');if(el)pv.scrollTo({top:el.getBoundingClientRect().top-pv.getBoundingClientRect().top+pv.scrollTop-6,behavior:'smooth'});secLock=Date.now()+700;document.querySelectorAll('#pvnav .spills button').forEach(x=>x.classList.toggle('on',x===b));document.querySelectorAll('#pvpre .medh').forEach(x=>x.classList.toggle('on',x===el));return}
+if(a==='edt'){openEd(med?med.s:[pvId]);return}
 if(a==='mkey'&&med){med.k=+b.dataset.k;saveEv()}
+const ms=med&&b.dataset.id?songs.find(x=>x.id===+b.dataset.id):null;if(ms&&modAct(ms,b))store.set('songs',songs);
 if(a==='mod')showMod=!showMod;
 if(s&&modAct(s,b))store.set('songs',songs);
 if(a==='tr')trans+=+b.dataset.d;
@@ -353,7 +356,7 @@ if(a==='dr')pvDr=!pvDr;
 if(a==='fsc'){const d=document;d.fullscreenElement?d.exitFullscreen():d.documentElement.requestFullscreen().catch(()=>{});return}
 if(a==='pn'){const j=pvList.indexOf(pvId)+ +b.dataset.d;if(pvList[j]){pvId=pvList[j];trans=0;$('pvsheet').scrollTop=0}}
 renderPv()};
-$('pv').onchange=e=>{const el=e.target;if(el.dataset&&el.dataset.a==='msel'&&typeof pvId==='number'&&modSel(el)){store.set('songs',songs);renderPv()}};
+$('pv').onchange=e=>{const el=e.target;if(!el.dataset||el.dataset.a!=='msel')return;if(typeof pvId==='number'){if(modSel(el)){store.set('songs',songs);renderPv()}}else{const m=medOf(pvId);if(m&&modSel(el,m.k)){store.set('songs',songs);renderPv()}}};
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('md').hidden)closeMd();else if(pvId)closePv()});
 $('evpv').onclick=()=>{const e=cur();if(!e||!e.s.length)return;trans=0;const l=e.s.map(x=>isMed(x)?x.m:x);openPv(l[0],l)};
 $('evmd').onclick=()=>openMd(null);
@@ -388,3 +391,24 @@ window.addEventListener('resize',fitSoon);
 if(window.ResizeObserver){new ResizeObserver(fitSoon).observe($('perpustakaan'));new ResizeObserver(fitSoon).observe($('pv'))}
 document.addEventListener('fullscreenchange',fitSoon);
 fitSheet();
+
+
+/* ===== v35: editor lirik & chord dari Acara (daftar acara maupun presenter), lagu dalam medley bisa dipilih ===== */
+let edIds=[],edId=0,edDraft={};
+(function(){const d=document.createElement('div');d.id='ed';d.hidden=true;d.setAttribute('role','dialog');d.setAttribute('aria-label','Edit lirik dan chord');d.innerHTML='<div id="edbox"></div>';document.body.appendChild(d)})();
+function edStash(){const t=$('exe');if(t&&edId)edDraft[edId]=t.value}
+function renderEd(){const sg=songs.find(x=>x.id===edId);if(!sg){closeEd();return}
+const M=['Intro','Verse','Chorus','Bridge','Outro','Interlude'],txt=edDraft[edId]!==undefined?edDraft[edId]:(sg.x||'');
+const head=edIds.length>1?'<select id="edsel" aria-label="Pilih lagu">'+edIds.map(id=>{const y=songs.find(q=>q.id===id);return y?'<option value="'+id+'"'+(id===edId?' selected':'')+'>'+esc(y.t)+'</option>':''}).join('')+'</select>':'<b>'+esc(sg.t)+'</b>';
+$('edbox').innerHTML='<div class="edtop"><button class="btn sm" data-a="edx">\u2039 Batal</button><div class="ttl"><span class="edh">Edit lirik &amp; chord</span>'+head+'</div><button class="btn sm main" data-a="eds">Simpan</button></div>'
++'<div class="edtools"><span class="cgl">Sisipkan bagian</span>'+M.map(m=>'<button class="btn sm" data-a="edi" data-m="['+m+']">'+m+'</button>').join('')+'<span class="edhint">Chord ditulis di nada asli ('+KL[baseKey(sg)]+'). Baris chord di atas lirik; penanda bagian di barisnya sendiri, mis. [Verse 1]. Perubahan nada per bagian diatur lewat \u201cAtur nada tiap bagian\u201d di presenter.</span></div>'
++'<textarea id="exe" wrap="off" spellcheck="false" aria-label="Edit chord dan lirik">'+esc(txt)+'</textarea>'}
+function openEd(ids){ids=(ids||[]).filter(id=>songs.some(x=>x.id===id));if(!ids.length)return;edIds=ids;edId=ids[0];edDraft={};$('ed').hidden=false;document.body.style.overflow='hidden';renderEd();const t=$('exe');if(t)t.focus()}
+function closeEd(){$('ed').hidden=true;edDraft={};document.body.style.overflow=(pvId||!$('md').hidden)?'hidden':''}
+$('ed').onclick=e=>{if(e.target===$('ed')){edStash();if(Object.keys(edDraft).some(k=>{const y=songs.find(q=>q.id===+k);return y&&(y.x||'')!==edDraft[k]})&&!confirm('Buang perubahan yang belum disimpan?'))return;closeEd();return}
+const b=e.target.closest('button');if(!b)return;const a=b.dataset.a;
+if(a==='edx'){edStash();if(Object.keys(edDraft).some(k=>{const y=songs.find(q=>q.id===+k);return y&&(y.x||'')!==edDraft[k]})&&!confirm('Buang perubahan yang belum disimpan?'))return;closeEd();return}
+if(a==='edi'){const t=$('exe');if(t){const x=t.selectionStart,y=t.selectionEnd,nl=x&&t.value[x-1]!=='\n'?'\n':'';t.setRangeText(nl+b.dataset.m+'\n',x,y,'end');t.focus()}return}
+if(a==='eds'){edStash();let ch=false;Object.keys(edDraft).forEach(k=>{const y=songs.find(q=>q.id===+k);if(y&&(y.x||'')!==edDraft[k]){y.x=edDraft[k];pruneMod(y);ch=true}});if(ch)store.set('songs',songs);closeEd();if(pvId)renderPv();renderEv();if(typeof renderSongs==='function')renderSongs()}};
+$('ed').onchange=e=>{if(e.target.id==='edsel'){edStash();edId=+e.target.value;renderEd()}};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('ed').hidden){e.stopImmediatePropagation();e.preventDefault();$('ed').onclick({target:$('edbox').querySelector('[data-a="edx"]')?$('edbox').querySelector('[data-a="edx"]'):$('ed'),closest:()=>$('edbox').querySelector('[data-a="edx"]')})}},true);
